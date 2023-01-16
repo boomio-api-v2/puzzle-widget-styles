@@ -1,5 +1,5 @@
 ////constants
-const localStoragePropertyName = 'boomioPluginConfig';
+const localStoragePropertyName = 'boomioPluginPuzzleConfig';
 
 const defaultSuccessStatus = true;
 
@@ -28,6 +28,13 @@ const puzzlesCoordinate = [
     { top: '60px', left: '60px' },
 ]
 
+const puzzleImagesList = [
+    'https://github.com/boomio-api-v2/puzzle-widget-styles/blob/main/img/puzzle-1.png?raw=true',
+    'https://github.com/boomio-api-v2/puzzle-widget-styles/blob/main/img/puzzle-2.png?raw=true',
+    'https://github.com/boomio-api-v2/puzzle-widget-styles/blob/main/img/puzzle-3.png?raw=true',
+    'https://github.com/boomio-api-v2/puzzle-widget-styles/blob/main/img/puzzle-4.png?raw=true'
+];
+
 const puzzleWidgetSize = 150;
 
 let isPuzzleWidgetDiplayed = false;
@@ -47,7 +54,8 @@ class LocalStorageConfig {
     }
 
     updateConfig (property) {
-        const objToString = JSON.stringify({...this.config, ...property})
+        this.config = { ...this.config, ...property }
+        const objToString = JSON.stringify(this.config)
         localStorage.setItem(localStoragePropertyName, objToString)
     }
 
@@ -59,8 +67,9 @@ class LocalStorageConfig {
         const appUrl = config?.appUrl ?? defaultAppUrl;
         const isPuzzle = config?.isPuzzle ?? defaultSuccessStatus;
         const puzzlesAlreadyCollected = config?.puzzlesAlreadyCollected ?? 0;
-        const appearingPuzzleNr = config?.appearingPuzzleNr ?? 0;
-        return { isPuzzle, img, qrCode, animationNR, appUrl, puzzlesAlreadyCollected, appearingPuzzleNr };
+        const appearingPuzzleNr = config?.appearingPuzzleNr ?? 1;
+        const renderCount = config?.renderCount ?? 0;
+        return { isPuzzle, img, qrCode, animationNR, appUrl, puzzlesAlreadyCollected, appearingPuzzleNr, renderCount };
     };
 };
 /////////////////////////////////////
@@ -70,6 +79,7 @@ class Puzzle extends LocalStorageConfig {
     constructor() {
         super()
         this.config = super.getDefaultConfig();
+        super.updateConfig({ renderCount: this.config.renderCount + 1 })
     }
     addStyles (cssRules)  {
         const style = document.createElement('style');
@@ -107,16 +117,17 @@ class Puzzle extends LocalStorageConfig {
             animationEl.style.left = left;
             animationEl.classList.add('boomio--animation__wrapper');
             animationEl.classList.add('boomio--animation__wrapper--initial');
+            animationEl.style.content = `url(${puzzleImagesList[i]})`;
             document.body.appendChild(animationEl);
         }
         this.startAnimation()
     }
 
     startAnimation () {
-        const { isPuzzle, qrCode, animationNR, puzzlesAlreadyCollected, img } = this.config
+        const { isPuzzle, qrCode, animationNR, puzzlesAlreadyCollected, img, renderCount, appearingPuzzleNr } = this.config
+        if (renderCount % appearingPuzzleNr !== 0) return;
         if (!isPuzzle) return;
-        const divsize = (100).toFixed();
-        const QRsize = (300).toFixed();
+        const divsize = 100;
 
         const dash = '-';
         const pos = qrCode.indexOf(dash);
@@ -130,8 +141,8 @@ class Puzzle extends LocalStorageConfig {
         const clientWidth = document.documentElement.clientWidth
         const clientHeight = document.documentElement.clientHeight
 
-        const posx = getRandomArbitrary(puzzleWidgetSize + 20, clientWidth - QRsize).toFixed();
-        const posy = getRandomArbitrary(puzzleWidgetSize + 20, clientHeight - QRsize * 1.5).toFixed();
+        const posx = getRandomArbitrary(puzzleWidgetSize + 20, clientWidth - divsize).toFixed();
+        const posy = getRandomArbitrary(puzzleWidgetSize + 20, clientHeight - divsize).toFixed();
 
         const animate = (animation) => (el) => {
             el.classList.add(`boomio--animation--${animation}`);
@@ -157,6 +168,7 @@ class Puzzle extends LocalStorageConfig {
         animationEl.setAttribute('id', `boomio--animation-${puzzlesAlreadyCollected}`);
         animationEl.classList.add('boomio--animation__wrapper');
         animationEl.classList.add('boomio--animation__wrapper--initial');
+        animationEl.style.content = `url(${puzzleImagesList[puzzlesAlreadyCollected]})`;
         animationEl.classList.remove('boomio--qr');
 
         const showCouponCard = () => {
@@ -203,7 +215,6 @@ class Puzzle extends LocalStorageConfig {
             document.getElementById('close').onclick = closeDiscount;
         }
 
-
         const removeClickListener = () => {
             animationEl.removeEventListener('click',  onPuzzleClick);
         }
@@ -215,6 +226,7 @@ class Puzzle extends LocalStorageConfig {
                 setTimeout(() => {
                     this.removeWidgetAndAllPuzzles()
                     showCouponCard()
+                    super.updateConfig({puzzlesAlreadyCollected: 0})
                 }, 2000)
             }
             removeClickListener();
@@ -277,7 +289,7 @@ class Puzzle extends LocalStorageConfig {
 		}
 		.boomio--animation__wrapper--initial {
 			width: ${divsize}px;
-			content: url(${img});
+			// content: url(${img});
 			cursor: pointer;
 			transition: transform 300ms cubic-bezier(0.18, 0.89, 0.32, 1.28);
 			animation-duration: ${duration};
@@ -744,7 +756,7 @@ class Puzzle extends LocalStorageConfig {
     };
 
     addPuzzleToWidget ()  {
-        const { puzzlesAlreadyCollected} = this.config
+        const { puzzlesAlreadyCollected } = this.config
         const animation = document.getElementById(`boomio--animation-${puzzlesAlreadyCollected}`);
         if (!isPuzzleWidgetDiplayed) {
             this.showPuzzleWidget()
@@ -754,12 +766,7 @@ class Puzzle extends LocalStorageConfig {
         animation.style.transition = 'all 2s ease'
         animation.style.top = top;
         animation.style.left = left;
-        this.config.puzzlesAlreadyCollected += 1;
-        super.updateConfig({ puzzlesAlreadyCollected: this.config.puzzlesAlreadyCollected })
-        if (this.config.puzzlesAlreadyCollected >= 4) {
-            super.updateConfig({puzzlesAlreadyCollected: 0})
-            return;
-        }
+        super.updateConfig({ puzzlesAlreadyCollected: puzzlesAlreadyCollected + 1  })
         setTimeout(() => {
             this.startAnimation()
         }, 2000)
@@ -827,7 +834,7 @@ document.onreadystatechange = () => {
     if (puzzle.config.puzzlesAlreadyCollected > 0) {
         puzzle.drawPuzzlesByCollectedCount()
         puzzle.showPuzzleWidget()
+    } else {
+        puzzle.startAnimation();
     }
-
-    puzzle.startAnimation();
 };
