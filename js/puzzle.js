@@ -45,61 +45,71 @@ let isPuzzleWidgetDiplayed = false;
 
 const getRandomArbitrary = (min, max) => Math.random() * (max - min) + min;
 
+/////// Drag Element /////////
 
-const dragElement = (elmnt) => {
-    const closeDragElement = () => {
-        // stop moving when mouse button is released:
+class DragElement {
+    constructor(elmnt) {
+        this.elmnt = elmnt;
+        this.pos1 = 0;
+        this.pos2 = 0;
+        this.pos3 = 0;
+        this.pos4 = 0;
+
+        if (isMobileDevice) {
+            this.addMobileListener()
+            return;
+        }
+
+        if (document.getElementById(elmnt.id + "header")) {
+            // if present, the header is where you move the DIV from:
+            document.getElementById(elmnt.id + "header").onmousedown = this.dragMouseDown.bind(this);
+        } else {
+            // otherwise, move the DIV from anywhere inside the DIV:
+            elmnt.onmousedown = this.dragMouseDown.bind(this);
+
+        }
+    }
+    addMobileListener() {
+        this.elmnt.addEventListener('touchmove', (e) =>  {
+            const touchLocation = e.targetTouches[0];
+            this.elmnt.style.left = touchLocation.pageX + 'px';
+            this.elmnt.style.top = touchLocation.pageY + 'px';
+        })
+    }
+
+    closeDragElement () {
         document.onmouseup = null;
         document.onmousemove = null;
     }
 
-    const elementDrag = (e) => {
+    elementDrag (e) {
         e = e || window.event;
         e.preventDefault();
         // calculate the new cursor position:
-        pos1 = pos3 - e.clientX;
-        pos2 = pos4 - e.clientY;
-        pos3 = e.clientX;
-        pos4 = e.clientY;
+        this.pos1 = this.pos3 - e.clientX;
+        this.pos2 = this.pos4 - e.clientY;
+        this.pos3 = e.clientX;
+        this.pos4 = e.clientY;
         // set the element's new position:
-        elmnt.style.top = (elmnt.offsetTop - pos2) + "px";
-        elmnt.style.left = (elmnt.offsetLeft - pos1) + "px";
+        this.elmnt.style.top = (this.elmnt.offsetTop - this.pos2) + "px";
+        this.elmnt.style.left = (this.elmnt.offsetLeft - this.pos1) + "px";
     }
 
 
-    const dragMouseDown = (e) => {
+     dragMouseDown(e) {
         e = e || window.event;
         e.preventDefault();
         // get the mouse cursor position at startup:
-        pos3 = e.clientX;
-        pos4 = e.clientY;
-        document.onmouseup = closeDragElement;
+        this.pos3 = e.clientX;
+        this.pos4 = e.clientY;
+        document.onmouseup = this.closeDragElement.bind(this);
         // call a function whenever the cursor moves:
-        document.onmousemove = elementDrag;
+        document.onmousemove = this.elementDrag.bind(this);
     }
-
-    let pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
-
-    if (isMobileDevice) {
-        elmnt.addEventListener('touchmove', (e) =>  {
-            const touchLocation = e.targetTouches[0];
-            elmnt.style.left = touchLocation.pageX + 'px';
-            elmnt.style.top = touchLocation.pageY + 'px';
-        })
-        return;
-    }
-
-    if (document.getElementById(elmnt.id + "header")) {
-        // if present, the header is where you move the DIV from:
-        document.getElementById(elmnt.id + "header").onmousedown = dragMouseDown;
-    } else {
-        // otherwise, move the DIV from anywhere inside the DIV:
-        elmnt.onmousedown = dragMouseDown;
-
-    }
-
 
 }
+
+///////////
 
 ///////// Local Storage Config Class ///////
 class LocalStorageConfig {
@@ -127,7 +137,8 @@ class LocalStorageConfig {
         const puzzlesAlreadyCollected = config?.puzzlesAlreadyCollected ?? 0;
         const appearingPuzzleNr = config?.appearingPuzzleNr ?? 1;
         const renderCount = config?.renderCount ?? 0;
-        return { isPuzzle, img, qrCode, animationNR, appUrl, puzzlesAlreadyCollected, appearingPuzzleNr, renderCount };
+        const customText = config?.customText ?? 'text'
+        return { isPuzzle, img, qrCode, animationNR, appUrl, puzzlesAlreadyCollected, appearingPuzzleNr, renderCount, customText };
     };
 };
 /////////////////////////////////////
@@ -165,7 +176,7 @@ class Puzzle extends LocalStorageConfig {
         puzzleWidget.style.top = '10px';
         document.body.appendChild(puzzleWidget);
         this.puzzleWidget = puzzleWidget
-        dragElement(this.puzzleWidget)
+        new DragElement(this.puzzleWidget)
         isPuzzleWidgetDiplayed = true;
     }
 
@@ -235,50 +246,6 @@ class Puzzle extends LocalStorageConfig {
         animationEl.style.content = `url(${puzzleImagesList[puzzlesAlreadyCollected]})`;
         animationEl.classList.remove('boomio--qr');
 
-        // const showCouponCard = () => {
-        //     const elementRemove = document.getElementById('boomio--qr');
-        //     if (elementRemove != null) {
-        //         elementRemove.remove();
-        //     }
-        //     animationEl.classList.remove('boomio--animation__wrapper--initial');
-        //     animationEl.classList.add('boomio--animation__wrapper--qr');
-        //     const qrEl = document.createElement('div');
-        //     qrEl.setAttribute('id', 'boomio--qr');
-        //     qrEl.innerHTML = this.qrCodeInnerHtml();
-        //
-        //     document.body.append(qrEl);
-        //     new QRCode('qrcodeShowHtml', {
-        //         text: qrCode,
-        //         width: 250,
-        //         height: 250,
-        //         colorDark: '#000000',
-        //         colorLight: '#ffffff',
-        //         correctLevel: QRCode.CorrectLevel.H,
-        //     });
-        //
-        //     const showQR = (e) => {
-        //         document.getElementById('qrcodeShow').style.display = 'block';
-        //         document.getElementById('coupon_div').style.display = 'none';
-        //         e.stopPropagation();
-        //     }
-        //
-        //     const showCoupon = (e) => {
-        //         document.getElementById('qrcodeShow').style.display = 'none';
-        //         document.getElementById('coupon_div').style.display = 'block';
-        //         e.stopPropagation();
-        //     }
-        //
-        //     const closeDiscount = (e) => {
-        //         const elementRemove = document.getElementById('boomio--qr');
-        //         elementRemove.remove();
-        //         e.stopPropagation();
-        //     }
-        //
-        //     document.getElementById('coupon_div').onclick = showQR;
-        //     document.getElementById('qrcodeShow').onclick = showCoupon;
-        //     document.getElementById('close').onclick = closeDiscount;
-        // }
-
         const removeClickListener = () => {
             animationEl.removeEventListener('click',  onPuzzleClick);
         }
@@ -322,11 +289,12 @@ class Puzzle extends LocalStorageConfig {
             cursor: move;
         }
         .boomio--puzzle-widget-text {
+            width: 100%;
             z-index: 100000;
             position: absolute;
             color: white;
             font-weight: bold;
-            top: 50px;
+            top: 60px;
             font-size: 36px;
             text-align: center;
         }
@@ -833,7 +801,6 @@ class Puzzle extends LocalStorageConfig {
 		}`;
 
         this.addStyles( css);
-
         animFunc(animationEl);
     };
 
@@ -855,18 +822,17 @@ class Puzzle extends LocalStorageConfig {
         });
         document.getElementById('qrcodeShow').style.display = 'block';
         document.getElementById('coupon_div').style.display = 'none';
-        const closeDiscount = (e) => {
+        document.getElementById('close').onclick = (e) => {
             const elementRemove = document.getElementById('boomio--qr');
             elementRemove.remove();
             e.stopPropagation();
-        }
-        document.getElementById('close').onclick = closeDiscount;
+        };
     }
 
     addWidgetText() {
         const widgetText = document.createElement('div');
         widgetText.classList.add('boomio--puzzle-widget-text')
-        widgetText.innerText = '20% discount';
+        widgetText.innerText = this.config.customText;
         this.puzzleWidget.appendChild(widgetText)
     }
 
@@ -889,14 +855,8 @@ class Puzzle extends LocalStorageConfig {
                 this.startAnimation()
             }
         }, 2000)
-}
+    }
 
-    // removeWidgetAndAllPuzzles () {
-    //     document.getElementById('puzzle-widget').remove();
-    //     for (let i = 0; i <= 3; i++) {
-    //         document.getElementById(`boomio--animation-${i}`).remove();
-    //     }
-    // }
 
     qrCodeInnerHtml = () =>  `<div class="product-design-bg-2 p-0 Preview-select box-show qr-div" >
 		<span class='close' id='close'>&#x2715; </span>
