@@ -46,9 +46,7 @@ let isPuzzleWidgetDiplayed = false;
 const getRandomArbitrary = (min, max) => Math.random() * (max - min) + min;
 
 
-
 const dragElement = (elmnt) => {
-
     const closeDragElement = () => {
         // stop moving when mouse button is released:
         document.onmouseup = null;
@@ -77,25 +75,26 @@ const dragElement = (elmnt) => {
         pos4 = e.clientY;
         document.onmouseup = closeDragElement;
         // call a function whenever the cursor moves:
-        if (isMobileDevice) {
-            document.onmousemove = elementDrag;
-        } else {
-            document.ontouchmove = elementDrag;
-        }
+        document.onmousemove = elementDrag;
     }
 
     let pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
+
+    if (isMobileDevice) {
+        elmnt.addEventListener('touchmove', (e) =>  {
+            const touchLocation = e.targetTouches[0];
+            elmnt.style.left = touchLocation.pageX + 'px';
+            elmnt.style.top = touchLocation.pageY + 'px';
+        })
+        return;
+    }
+
     if (document.getElementById(elmnt.id + "header")) {
         // if present, the header is where you move the DIV from:
         document.getElementById(elmnt.id + "header").onmousedown = dragMouseDown;
     } else {
         // otherwise, move the DIV from anywhere inside the DIV:
-        if (isMobileDevice) {
-            elmnt.ontouchstart = dragMouseDown;
-        } else {
-            elmnt.onmousedown = dragMouseDown;
-
-        }
+        elmnt.onmousedown = dragMouseDown;
 
     }
 
