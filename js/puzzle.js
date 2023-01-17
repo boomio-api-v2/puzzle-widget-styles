@@ -12,27 +12,27 @@ const defaultAppUrl = 'https://www.boomio.com/?coupon_id=3877216F19FE4DD59E0C08C
 const defaultGifImage =
     'https://github.com/boomio-api-v2/easter-egg-styles/blob/16df9945f669319808bd93be1df1de3924234e46/img/5.gif?raw=true';
 
-const appStoreImage =
-    'https://github.com/boomio-api-v2/easter-egg-styles/blob/main/img/appstore.png?raw=true';
-const playStoreImage =
-    'https://github.com/boomio-api-v2/easter-egg-styles/blob/main/img/playstore.png?raw=true';
-const dotImage =
-    'https://github.com/boomio-api-v2/easter-egg-styles/blob/main/img/dot.png?raw=true';
+// const appStoreImage =
+//     'https://github.com/boomio-api-v2/easter-egg-styles/blob/main/img/appstore.png?raw=true';
+// const playStoreImage =
+//     'https://github.com/boomio-api-v2/easter-egg-styles/blob/main/img/playstore.png?raw=true';
+// const dotImage =
+//     'https://github.com/boomio-api-v2/easter-egg-styles/blob/main/img/dot.png?raw=true';
 
-const frameSvg = 'https://raw.githubusercontent.com/boomio-api-v2/puzzle-widget-styles/main/img/frame.svg?token=GHSAT0AAAAAAB5RF6O5AXBXON37VWYJA53GY6FEIZA'
+const frameSvg = '/img/frame.png'
 
 const puzzlesCoordinate = [
-    { top: '0px', left: '0px' },
-    { top: '0px', left: '60px' },
-    { top: '60px', left: '0px' },
-    { top: '60px', left: '60px' },
+    { top: '20px', left: '20px', width: '89.84px', height: '112.33px' },
+    { top: '20px', left: '85.35px', width: '112.3px', height: '89.86px' },
+    { top: '105px', left: '20px', width: '112.3px', height: '89.86px' },
+    { top: '82.54px', left: '106.8px', width: '89.84px', height: '112.33px' },
 ]
 
 const puzzleImagesList = [
-    'https://github.com/boomio-api-v2/puzzle-widget-styles/blob/main/img/puzzle-1.png?raw=true',
-    'https://github.com/boomio-api-v2/puzzle-widget-styles/blob/main/img/puzzle-2.png?raw=true',
-    'https://github.com/boomio-api-v2/puzzle-widget-styles/blob/main/img/puzzle-3.png?raw=true',
-    'https://github.com/boomio-api-v2/puzzle-widget-styles/blob/main/img/puzzle-4.png?raw=true'
+    '/img/puzzle-1.png',
+    '/img/puzzle-2.png',
+    '/img/puzzle-3.png',
+    '/img/puzzle-4.png',
 ];
 
 const puzzleWidgetSize = 150;
@@ -91,30 +91,32 @@ class Puzzle extends LocalStorageConfig {
             style.appendChild(document.createTextNode(cssRules));
         }
     };
-    showPuzzleWidget () {
-        const puzzleWidget = document.createElement('div');
-        puzzleWidget.setAttribute('id', 'puzzle-widget');
-        puzzleWidget.style.backgroundImage = ` url(${frameSvg})`;
-        puzzleWidget.style.backgroundColor = '#F5F5F5';
-        puzzleWidget.style.borderRadius = '10px';
-        puzzleWidget.style.backgroundSize = 'contain';
-        puzzleWidget.style.width = `${puzzleWidgetSize}px`;
-        puzzleWidget.style.height = `${puzzleWidgetSize}px`;
-        puzzleWidget.style.position = 'fixed';
-        puzzleWidget.style.zIndex = '2';
-        puzzleWidget.style.left = '10px';
-        puzzleWidget.style.top = '10px';
-        document.body.appendChild(puzzleWidget);
-        isPuzzleWidgetDiplayed = true;
-    }
+    // showPuzzleWidget () {
+    //     const puzzleWidget = document.createElement('div');
+    //     puzzleWidget.setAttribute('id', 'puzzle-widget');
+    //     puzzleWidget.style.backgroundImage = ` url(${frameSvg})`;
+    //     puzzleWidget.style.backgroundColor = '#F5F5F5';
+    //     puzzleWidget.style.borderRadius = '10px';
+    //     puzzleWidget.style.backgroundSize = 'contain';
+    //     puzzleWidget.style.width = `${puzzleWidgetSize}px`;
+    //     puzzleWidget.style.height = `${puzzleWidgetSize}px`;
+    //     puzzleWidget.style.position = 'fixed';
+    //     puzzleWidget.style.zIndex = '2';
+    //     puzzleWidget.style.left = '10px';
+    //     puzzleWidget.style.top = '10px';
+    //     document.body.appendChild(puzzleWidget);
+    //     isPuzzleWidgetDiplayed = true;
+    // }
 
     drawPuzzlesByCollectedCount () {
         for (let i = 0; i < this.config.puzzlesAlreadyCollected; i++) {
             const animationEl =  document.createElement('div')
             animationEl.setAttribute('id',`boomio--animation-${i}`);
-            const { top, left } =  puzzlesCoordinate[i];
+            const { top, left, width, height } =  puzzlesCoordinate[i];
             animationEl.style.top = top;
             animationEl.style.left = left;
+            animationEl.style.width = width;
+            animationEl.style.height = height;
             animationEl.classList.add('boomio--animation__wrapper');
             animationEl.classList.add('boomio--animation__wrapper--initial');
             animationEl.style.content = `url(${puzzleImagesList[i]})`;
@@ -162,58 +164,60 @@ class Puzzle extends LocalStorageConfig {
             animate('lightSpeedInLeft'),
             animate('rollIn'),
         ];
-
+        const { width, height } =  puzzlesCoordinate[puzzlesAlreadyCollected];
         const animFunc = animArr[animationNR];
         const animationEl = document.createElement('div');
         animationEl.setAttribute('id', `boomio--animation-${puzzlesAlreadyCollected}`);
         animationEl.classList.add('boomio--animation__wrapper');
         animationEl.classList.add('boomio--animation__wrapper--initial');
+        animationEl.style.width = width;
+        animationEl.style.height = height
         animationEl.style.content = `url(${puzzleImagesList[puzzlesAlreadyCollected]})`;
         animationEl.classList.remove('boomio--qr');
 
-        const showCouponCard = () => {
-            const elementRemove = document.getElementById('boomio--qr');
-            if (elementRemove != null) {
-                elementRemove.remove();
-            }
-            animationEl.classList.remove('boomio--animation__wrapper--initial');
-            animationEl.classList.add('boomio--animation__wrapper--qr');
-            const qrEl = document.createElement('div');
-            qrEl.setAttribute('id', 'boomio--qr');
-            qrEl.innerHTML = this.qrCodeInnerHtml();
-
-            document.body.append(qrEl);
-            new QRCode('qrcodeShowHtml', {
-                text: qrCode,
-                width: 250,
-                height: 250,
-                colorDark: '#000000',
-                colorLight: '#ffffff',
-                correctLevel: QRCode.CorrectLevel.H,
-            });
-
-            const showQR = (e) => {
-                document.getElementById('qrcodeShow').style.display = 'block';
-                document.getElementById('coupon_div').style.display = 'none';
-                e.stopPropagation();
-            }
-
-            const showCoupon = (e) => {
-                document.getElementById('qrcodeShow').style.display = 'none';
-                document.getElementById('coupon_div').style.display = 'block';
-                e.stopPropagation();
-            }
-
-            const closeDiscount = (e) => {
-                const elementRemove = document.getElementById('boomio--qr');
-                elementRemove.remove();
-                e.stopPropagation();
-            }
-
-            document.getElementById('coupon_div').onclick = showQR;
-            document.getElementById('qrcodeShow').onclick = showCoupon;
-            document.getElementById('close').onclick = closeDiscount;
-        }
+        // const showCouponCard = () => {
+        //     const elementRemove = document.getElementById('boomio--qr');
+        //     if (elementRemove != null) {
+        //         elementRemove.remove();
+        //     }
+        //     animationEl.classList.remove('boomio--animation__wrapper--initial');
+        //     animationEl.classList.add('boomio--animation__wrapper--qr');
+        //     const qrEl = document.createElement('div');
+        //     qrEl.setAttribute('id', 'boomio--qr');
+        //     qrEl.innerHTML = this.qrCodeInnerHtml();
+        //
+        //     document.body.append(qrEl);
+        //     new QRCode('qrcodeShowHtml', {
+        //         text: qrCode,
+        //         width: 250,
+        //         height: 250,
+        //         colorDark: '#000000',
+        //         colorLight: '#ffffff',
+        //         correctLevel: QRCode.CorrectLevel.H,
+        //     });
+        //
+        //     const showQR = (e) => {
+        //         document.getElementById('qrcodeShow').style.display = 'block';
+        //         document.getElementById('coupon_div').style.display = 'none';
+        //         e.stopPropagation();
+        //     }
+        //
+        //     const showCoupon = (e) => {
+        //         document.getElementById('qrcodeShow').style.display = 'none';
+        //         document.getElementById('coupon_div').style.display = 'block';
+        //         e.stopPropagation();
+        //     }
+        //
+        //     const closeDiscount = (e) => {
+        //         const elementRemove = document.getElementById('boomio--qr');
+        //         elementRemove.remove();
+        //         e.stopPropagation();
+        //     }
+        //
+        //     document.getElementById('coupon_div').onclick = showQR;
+        //     document.getElementById('qrcodeShow').onclick = showCoupon;
+        //     document.getElementById('close').onclick = closeDiscount;
+        // }
 
         const removeClickListener = () => {
             animationEl.removeEventListener('click',  onPuzzleClick);
@@ -224,8 +228,12 @@ class Puzzle extends LocalStorageConfig {
             this.addPuzzleToWidget()
             if (this.config.puzzlesAlreadyCollected >= 4) {
                 setTimeout(() => {
-                    this.removeWidgetAndAllPuzzles()
-                    showCouponCard()
+                    // this.removeWidgetAndAllPuzzles()
+                    // showCouponCard()
+                    const div = document.createElement('div');
+                    div.classList.add('boomio--puzzle-widget-text')
+                    div.innerText = '20% discount';
+                    document.body.appendChild(div)
                     super.updateConfig({puzzlesAlreadyCollected: 0})
                 }, 2000)
             }
@@ -248,6 +256,20 @@ class Puzzle extends LocalStorageConfig {
             ny: -1 * (animationEl.clientHeight + parseInt(posx)),
         };
         const css = `
+        [draggable=true] {
+            cursor: move;
+        }
+        .boomio--puzzle-widget-text {
+            width: 200px;
+            z-index: 100000;
+            position: absolute;
+            color: white;
+            font-weight: bold;
+            left: 10px;
+            top: 60px;
+            font-size: 36px;
+            text-align: center;
+        }
         #boomio--qr {
             position: absolute;
             top: 0px;
@@ -758,9 +780,9 @@ class Puzzle extends LocalStorageConfig {
     addPuzzleToWidget ()  {
         const { puzzlesAlreadyCollected } = this.config
         const animation = document.getElementById(`boomio--animation-${puzzlesAlreadyCollected}`);
-        if (!isPuzzleWidgetDiplayed) {
-            this.showPuzzleWidget()
-        }
+        // if (!isPuzzleWidgetDiplayed) {
+        //     this.showPuzzleWidget()
+        // }
         const { top, left } =  puzzlesCoordinate[puzzlesAlreadyCollected];
 
         animation.style.transition = 'all 2s ease'
@@ -772,58 +794,58 @@ class Puzzle extends LocalStorageConfig {
         }, 2000)
     }
 
-    removeWidgetAndAllPuzzles () {
-        document.getElementById('puzzle-widget').remove();
-        for (let i = 0; i <= 3; i++) {
-            document.getElementById(`boomio--animation-${i}`).remove();
-        }
-    }
+    // removeWidgetAndAllPuzzles () {
+    //     document.getElementById('puzzle-widget').remove();
+    //     for (let i = 0; i <= 3; i++) {
+    //         document.getElementById(`boomio--animation-${i}`).remove();
+    //     }
+    // }
 
-    qrCodeInnerHtml = () =>  `<div class="product-design-bg-2 p-0 Preview-select box-show qr-div" >
-		<span class='close' id='close'>&#x2715; </span>
-		<div class="coupon__preview__body coupon_discount_modal">
-		
-			<div class="coupon__preview__card__header text-center d-block">
-				<h1>YOU GOT A 20% DISCOUNT </h1>
-			</div>
-
-			<div class="coupon_preview_card_info ">
-				<div id='qrcodeShow' style="display:none">
-					<a class="qrcodeShowHtml" id="qrcodeShowHtml"> </a>
-				</div>
-				<div class="coupon__preview__card coupon_div" id="coupon_div" >
-					<div class="coupon_info">
-						<h3>20 %</h3>
-						<h3>Discount</h3>
-						<p>Unique code: <span id="qrcode">${this.config.qrCode}</span> </p>
-					</div>
-					<div class="coupon__preview__card__after"></div>
-					<div class="coupon__preview__card__befor"></div>
-				</div>
-			</div>
-			<div class="coupon_preview_card_footer">
-				<p>To have immpediate access for all your great rewards <b> open of download</b></p>
-				<a href=${this.config.appUrl}>
-				<div class="btn-content d-flex align-items-center justify-content-center" style="height: 46px;">
-					<img src="${dotImage}" alt="img not find">
-					<div class="d-flex flex-column btn-text-group ml-2"><small class="small-font">Open</small>
-						<b>Boomio
-							app</b>
-					</div>
-				</div>
-				</a>
-				<div class="d-flex pt-2">
-					<div class="appstore-img "><a href=""><img src="${appStoreImage}"
-								alt="App Store"></a></div>
-					<div class="playstore-img"><a href=${this.config.appUrl}"><img src="${playStoreImage}"
-								alt="Play Store"></a></div>
-				</div>
-				<div>
-					<p class="footer-dec">Don't have time now? Make a screenshot and use it later!</p>
-				</div>
-			</div>
-		</div>
-	</div>`
+    // qrCodeInnerHtml = () =>  `<div class="product-design-bg-2 p-0 Preview-select box-show qr-div" >
+	// 	<span class='close' id='close'>&#x2715; </span>
+	// 	<div class="coupon__preview__body coupon_discount_modal">
+	//
+	// 		<div class="coupon__preview__card__header text-center d-block">
+	// 			<h1>YOU GOT A 20% DISCOUNT </h1>
+	// 		</div>
+    //
+	// 		<div class="coupon_preview_card_info ">
+	// 			<div id='qrcodeShow' style="display:none">
+	// 				<a class="qrcodeShowHtml" id="qrcodeShowHtml"> </a>
+	// 			</div>
+	// 			<div class="coupon__preview__card coupon_div" id="coupon_div" >
+	// 				<div class="coupon_info">
+	// 					<h3>20 %</h3>
+	// 					<h3>Discount</h3>
+	// 					<p>Unique code: <span id="qrcode">${this.config.qrCode}</span> </p>
+	// 				</div>
+	// 				<div class="coupon__preview__card__after"></div>
+	// 				<div class="coupon__preview__card__befor"></div>
+	// 			</div>
+	// 		</div>
+	// 		<div class="coupon_preview_card_footer">
+	// 			<p>To have immpediate access for all your great rewards <b> open of download</b></p>
+	// 			<a href=${this.config.appUrl}>
+	// 			<div class="btn-content d-flex align-items-center justify-content-center" style="height: 46px;">
+	// 				<img src="${dotImage}" alt="img not find">
+	// 				<div class="d-flex flex-column btn-text-group ml-2"><small class="small-font">Open</small>
+	// 					<b>Boomio
+	// 						app</b>
+	// 				</div>
+	// 			</div>
+	// 			</a>
+	// 			<div class="d-flex pt-2">
+	// 				<div class="appstore-img "><a href=""><img src="${appStoreImage}"
+	// 							alt="App Store"></a></div>
+	// 				<div class="playstore-img"><a href=${this.config.appUrl}"><img src="${playStoreImage}"
+	// 							alt="Play Store"></a></div>
+	// 			</div>
+	// 			<div>
+	// 				<p class="footer-dec">Don't have time now? Make a screenshot and use it later!</p>
+	// 			</div>
+	// 		</div>
+	// 	</div>
+	// </div>`
 }
 ////////////////////////////
 
@@ -833,7 +855,7 @@ document.onreadystatechange = () => {
     const puzzle = new Puzzle()
     if (puzzle.config.puzzlesAlreadyCollected > 0) {
         puzzle.drawPuzzlesByCollectedCount()
-        puzzle.showPuzzleWidget()
+        // puzzle.showPuzzleWidget()
     } else {
         puzzle.startAnimation();
     }
