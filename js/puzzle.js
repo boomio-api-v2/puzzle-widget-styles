@@ -316,7 +316,7 @@ class Puzzle extends LocalStorageConfig {
             position: absolute;
             color: white;
             font-weight: bold;
-            top: 60px;
+            top: 50px;
             font-size: 36px;
             text-align: center;
         }
