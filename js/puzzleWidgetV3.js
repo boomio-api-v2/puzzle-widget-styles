@@ -179,7 +179,7 @@ class LocalStorageConfig {
 /////////////////////////////////////
 
 ////////Puzzle Class ////////////
-class PuzzleWidgetV2 extends LocalStorageConfig {
+class PuzzleWidgetV3 extends LocalStorageConfig {
     constructor() {
         super()
         this.config = super.getDefaultConfig();
@@ -995,7 +995,7 @@ class PuzzleWidgetV2 extends LocalStorageConfig {
 
 document.onreadystatechange = () => {
     if (document.readyState !== 'complete') return;
-    const puzzle = new PuzzleWidgetV2();
+    const puzzle = new PuzzleWidgetV3();
     const { showPuzzleWidget, boomioClosed } = puzzle.config;
     if (!showPuzzleWidget || boomioClosed){
         return;;
