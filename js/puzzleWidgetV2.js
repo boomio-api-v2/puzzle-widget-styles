@@ -14,15 +14,16 @@ const playStoreImage =
 const dotImage =
     'https://github.com/boomio-api-v2/easter-egg-styles/blob/main/img/dot.png?raw=true';
 
-const frameSvg = 'https://github.com/boomio-api-v2/puzzle-widget-styles/blob/main/img/frame.png?raw=true';
+// const frameSvg = 'https://github.com/boomio-api-v2/puzzle-widget-styles/blob/main/img/frame.png?raw=true';
+const frameSvg = '/img/frame.png';
 
 const isMobileDevice = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
 
 const puzzlesCoordinateForMobile = [
-    { top: '0px', left: '0px', width: '62.84px', height: '81.33px' },
-    { top: '0px', left: '47px', width: '80.3px', height: '60.86px' },
-    { top: '60px', left: '0px', width: '80.3px', height: '69.86px' },
-    { top: '41px', left: '60px', width: '66.84px', height: '88.3px' },
+    { top: '0px', left: '0px', width: '62.84px', height: '83.33px' },
+    { top: '0px', left: '47px', width: '80.3px', height: '66.86px' },
+    { top: '63px', left: '0px', width: '86.3px', height: '69.86px' },
+    { top: '44px', left: '62px', width: '66.84px', height: '88.3px' },
 ];
 
 const puzzlesCoordinateForDesktop =  [
@@ -33,14 +34,21 @@ const puzzlesCoordinateForDesktop =  [
 ]
 
 const puzzlesCoordinate = isMobileDevice ? puzzlesCoordinateForMobile : puzzlesCoordinateForDesktop;
+// const puzzleImagesList = [
+//     'https://github.com/boomio-api-v2/puzzle-widget-styles/blob/main/img/puzzle-1.png?raw=true',
+//     'https://github.com/boomio-api-v2/puzzle-widget-styles/blob/main/img/puzzle-2.png?raw=true',
+//     'https://github.com/boomio-api-v2/puzzle-widget-styles/blob/main/img/puzzle-3.png?raw=true',
+//     'https://github.com/boomio-api-v2/puzzle-widget-styles/blob/main/img/puzzle-4.png?raw=true',
+// ];
+
 const puzzleImagesList = [
-    'https://github.com/boomio-api-v2/puzzle-widget-styles/blob/main/img/puzzle-1.png?raw=true',
-    'https://github.com/boomio-api-v2/puzzle-widget-styles/blob/main/img/puzzle-2.png?raw=true',
-    'https://github.com/boomio-api-v2/puzzle-widget-styles/blob/main/img/puzzle-3.png?raw=true',
-    'https://github.com/boomio-api-v2/puzzle-widget-styles/blob/main/img/puzzle-4.png?raw=true',
+    '/img/puzzle-1.png',
+    '/img/puzzle-2.png',
+    '/img/puzzle-3.png',
+    '/img/puzzle-4.png',
 ];
 
-const puzzleWidgetSize = isMobileDevice ? 130 : 185;
+const puzzleWidgetSize = isMobileDevice ? 135 : 185;
 
 let isPuzzleWidgetDisplayed = false;
 
@@ -65,10 +73,10 @@ class DragElement {
 
         if (document.getElementById(elmnt.id + "header")) {
             // if present, the header is where you move the DIV from:
-            document.getElementById(elmnt.id + "header").onmousedown = this.dragMouseDown.bind(this);
+            document.getElementById(elmnt.id + "header").onmousedown = this.dragMouseDown;
         } else {
             // otherwise, move the DIV from anywhere inside the DIV:
-            elmnt.onmousedown = this.dragMouseDown.bind(this);
+            elmnt.onmousedown = this.dragMouseDown;
 
         }
     }
@@ -76,6 +84,7 @@ class DragElement {
         let mobileX = 0;
         let mobileY = 0;
         this.elmnt.addEventListener('touchmove', (e) =>  {
+            e.preventDefault()
             const { clientX, clientY } = e.touches[0];
             const isBlocking = this.checkIsMoveBlocking(clientX, clientY);
             if (isBlocking) return;
@@ -91,7 +100,7 @@ class DragElement {
 
     }
 
-    closeDragElement () {
+    closeDragElement = () => {
         document.onmouseup = null;
         document.onmousemove = null;
     }
@@ -101,7 +110,7 @@ class DragElement {
         return false;
     }
 
-    elementDrag (e) {
+    elementDrag = (e) => {
         e = e || window.event;
         e.preventDefault();
         this.pos1 = this.pos3 - e.clientX;
@@ -120,15 +129,15 @@ class DragElement {
     }
 
 
-     dragMouseDown(e) {
+     dragMouseDown = (e) => {
         e = e || window.event;
         e.preventDefault();
         // get the mouse cursor position at startup:
         this.pos3 = e.clientX;
         this.pos4 = e.clientY;
-        document.onmouseup = this.closeDragElement.bind(this);
+        document.onmouseup = this.closeDragElement;
         // call a function whenever the cursor moves:
-        document.onmousemove = this.elementDrag.bind(this);
+        document.onmousemove = this.elementDrag;
     }
 
 }
@@ -160,8 +169,10 @@ class LocalStorageConfig {
         const puzzlesAlreadyCollected = config?.puzzlesAlreadyCollected ?? 0;
         const appearingPuzzleNr = config?.appearingPuzzleNr ?? 1;
         const renderCount = config?.renderCount ?? 0;
-        const customText = config?.customText ?? ''
+        const customText = config?.customText ?? '';
+        const boomioClosed = config?.boomioClosed ?? false;
         return {
+            boomioClosed,
             showPuzzleWidget,
             qrCode,
             animationNR,
@@ -198,17 +209,14 @@ class PuzzleWidgetV2 extends LocalStorageConfig {
     showPuzzleWidget () {
         const puzzleWidget = document.createElement('div');
         puzzleWidget.setAttribute('id', 'puzzle-widget');
-        puzzleWidget.style.borderRadius = '10px';
-        puzzleWidget.style.backgroundSize = 'contain';
         puzzleWidget.style.width = `${puzzleWidgetSize}px`;
         puzzleWidget.style.height = `${puzzleWidgetSize}px`;
-        puzzleWidget.style.position = 'fixed';
-        puzzleWidget.style.zIndex = '1000';
-        puzzleWidget.style.left = '10px';
-        puzzleWidget.style.top = '10px';
+
         if (this.config.puzzlesAlreadyCollected > 0) {
             puzzleWidget.style.backgroundImage = ` url(${frameSvg})`;
+            this.addCloseIconToElement(puzzleWidget)
         }
+
         document.body.appendChild(puzzleWidget);
         this.puzzleWidget = puzzleWidget
         new DragElement(this.puzzleWidget)
@@ -227,14 +235,15 @@ class PuzzleWidgetV2 extends LocalStorageConfig {
             animationEl.style.height = height;
             animationEl.style.position = 'absolute';
             animationEl.classList.add('boomio--animation__wrapper');
-            animationEl.style.content = `url(${puzzleImagesList[i]})`;
+            animationEl.style.backgroundImage = `url(${puzzleImagesList[i]})`;
             puzzleWidget.appendChild(animationEl);
         }
         this.startAnimation()
     }
 
-    onPuzzleClick (e){
+    onPuzzleClick = (e) => {
         const puzzle = e.target;
+        puzzle.childNodes[0].remove()
         const puzzleTop = puzzle.offsetTop;
         const puzzleLeft = puzzle.offsetLeft;
         document.body.removeChild(puzzle)
@@ -250,19 +259,20 @@ class PuzzleWidgetV2 extends LocalStorageConfig {
         setTimeout(() => {
             this.addPuzzleToWidget(puzzle)
         }, 100)
+        setTimeout(() => {
+            this.addCloseIconToElement(this.puzzleWidget)
+        }, 1000)
     }
 
     startAnimation () {
         const {
-            showPuzzleWidget,
             qrCode,
             animationNR,
             puzzlesAlreadyCollected,
             renderCount,
-            appearingPuzzleNr
+            appearingPuzzleNr,
         } = this.config
         if ((renderCount % appearingPuzzleNr) !== 0) return;
-        if (!showPuzzleWidget) return;
         const puzzleSize = 100;
 
         const dash = '-';
@@ -303,10 +313,11 @@ class PuzzleWidgetV2 extends LocalStorageConfig {
         animationEl.classList.add('boomio--animation__wrapper--initial');
         animationEl.style.width = width;
         animationEl.style.height = height
-        animationEl.style.content = `url(${puzzleImagesList[puzzlesAlreadyCollected]})`;
+        animationEl.style.backgroundImage = `url(${puzzleImagesList[puzzlesAlreadyCollected]})`;
         animationEl.classList.remove('boomio--qr');
+        this.addCloseIconToElement(animationEl);
 
-        animationEl.addEventListener('click',  this.onPuzzleClick.bind(this), { once: true });
+        animationEl.addEventListener('click',  this.onPuzzleClick, { once: true });
         document.body.appendChild(animationEl);
 
         const systemFont =
@@ -324,6 +335,14 @@ class PuzzleWidgetV2 extends LocalStorageConfig {
         const css = `
         [draggable=true] {
             cursor: move;
+        }
+        #puzzle-widget {
+            border-radius: 10px;
+            background-size: contain;
+            position: fixed;
+            z-index: 1000;
+            left: 10px;
+            right: 10px;
         }
         .boomio--puzzle-widget-text {
             width: 100%;
@@ -362,6 +381,7 @@ class PuzzleWidgetV2 extends LocalStorageConfig {
 			left: ${posx}px;
 			top: ${posy}px;
 			visibility: visible;
+			background-size: cover;
 			opacity: 1;
             -webkit-tap-highlight-color: transparent;
             -webkit-touch-callout: none;
@@ -837,13 +857,30 @@ class PuzzleWidgetV2 extends LocalStorageConfig {
 			top: 6px;
 			color: #000;
 			cursor: pointer;
-		}`;
+		}
+		.custom-close-icon {
+		    display: flex;
+		    justify-content: center;
+		    align-items: center;
+            position: absolute;
+            right: -10px;
+            font-size: 13px;
+            top: -10px;
+            color: #000;
+            cursor: pointer;
+            background-color: lightgray;
+            width: 22px;
+            height: 22px;
+            border-radius: 20px;
+		}
+		`;
 
         this.addStyles( css);
+        this.animationEl = animationEl;
         animFunc(animationEl);
     };
 
-    showQR() {
+    showQR = () => {
         document.body.removeChild(this.puzzleWidget)
         const { qrCode } = this.config;
         const qrEl = document.createElement('div');
@@ -888,12 +925,34 @@ class PuzzleWidgetV2 extends LocalStorageConfig {
             this.puzzleWidget.style.backgroundImage = ` url(${frameSvg})`;
             if (puzzlesAlreadyCollected >= 4) {
                 this.addWidgetText()
-                this.puzzleWidget.onclick = this.showQR.bind(this)
-                super.updateConfig({puzzlesAlreadyCollected: 0})
+                this.puzzleWidget.onclick = this.showQR;
+                super.updateConfig({ puzzlesAlreadyCollected: 0 })
             } else {
                 this.startAnimation()
             }
         }, 1000)
+    }
+
+    addCloseIconToElement (element) {
+        const closeBtn = document.createElement('div')
+        closeBtn.classList.add('custom-close-icon')
+        closeBtn.innerHTML = '&#x2715; ';
+        closeBtn.addEventListener('onmouseover', (e) => {
+            e.preventDefault()
+            e.stopPropagation()
+        },)
+        closeBtn.addEventListener('click', (e) => {
+            e.stopPropagation()
+            e.preventDefault()
+            this.disableWidgetAndRemoveAllElements()
+        },{ once: true })
+        element.appendChild(closeBtn)
+    }
+
+    disableWidgetAndRemoveAllElements() {
+        this.updateConfig({ boomioClosed: true })
+        this.puzzleWidget.remove()
+        this.animationEl.remove()
     }
 
 
@@ -948,7 +1007,12 @@ class PuzzleWidgetV2 extends LocalStorageConfig {
 
 document.onreadystatechange = () => {
     if (document.readyState !== 'complete') return;
-    const puzzle = new PuzzleWidgetV2()
+    const puzzle = new PuzzleWidgetV2();
+    const { showPuzzleWidget, boomioClosed } = puzzle.config;
+    if (!showPuzzleWidget || boomioClosed){
+        return;;
+    }
+
     puzzle.showPuzzleWidget()
     if (puzzle.config.puzzlesAlreadyCollected > 0) {
         puzzle.drawPuzzlesByCollectedCount()
