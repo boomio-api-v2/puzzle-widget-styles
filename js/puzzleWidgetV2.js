@@ -160,7 +160,7 @@ class LocalStorageConfig {
 /////////////////////////////////////
 
 ////////Puzzle Class ////////////
-class PuzzleWidget extends LocalStorageConfig {
+class PuzzleWidgetV2 extends LocalStorageConfig {
     constructor() {
         super()
         this.config = super.getDefaultConfig();
@@ -932,7 +932,7 @@ class PuzzleWidget extends LocalStorageConfig {
 
 document.onreadystatechange = () => {
     if (document.readyState !== 'complete') return;
-    const puzzle = new PuzzleWidget()
+    const puzzle = new PuzzleWidgetV2()
     puzzle.showPuzzleWidget()
     if (puzzle.config.puzzlesAlreadyCollected > 0) {
         puzzle.drawPuzzlesByCollectedCount()
