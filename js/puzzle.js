@@ -1,16 +1,12 @@
 ////constants
 const localStoragePropertyName = 'boomioPluginPuzzleConfig';
 
-const defaultSuccessStatus = true;
-
 const defaultAnimation = 0;
 
 const defaultQrCode = '3877216F19FE4DD59E0C08C3BA569A0F';
 
 const defaultAppUrl = 'https://www.boomio.com/?coupon_id=3877216F19FE4DD59E0C08C3BA569A0F';
 
-const defaultGifImage =
-    'https://github.com/boomio-api-v2/easter-egg-styles/blob/16df9945f669319808bd93be1df1de3924234e46/img/5.gif?raw=true';
 
 const appStoreImage =
     'https://github.com/boomio-api-v2/easter-egg-styles/blob/main/img/appstore.png?raw=true';
@@ -21,7 +17,7 @@ const dotImage =
 
 const isMobileDevice = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
 
-const frameSvg = '/img/frame.png';
+const frameSvg = 'https://github.com/boomio-api-v2/puzzle-widget-styles/blob/main/img/frame.png?raw=true';
 
 const puzzlesCoordinate = [
     { top: '0px', left: '0px', width: '89.84px', height: '112.33px' },
@@ -31,15 +27,15 @@ const puzzlesCoordinate = [
 ]
 
 const puzzleImagesList = [
-    '/img/puzzle-1.png',
-    '/img/puzzle-2.png',
-    '/img/puzzle-3.png',
-    '/img/puzzle-4.png',
+    'https://github.com/boomio-api-v2/puzzle-widget-styles/blob/main/img/puzzle-1.png?raw=true',
+    'https://github.com/boomio-api-v2/puzzle-widget-styles/blob/main/img/puzzle-2.png?raw=true',
+    'https://github.com/boomio-api-v2/puzzle-widget-styles/blob/main/img/puzzle-3.png?raw=true',
+    'https://github.com/boomio-api-v2/puzzle-widget-styles/blob/main/img/puzzle-4.png?raw=true',
 ];
 
 const puzzleWidgetSize = 185;
 
-let isPuzzleWidgetDiplayed = false;
+let isPuzzleWidgetDisplayed = false;
 
 /////////////
 
@@ -71,9 +67,11 @@ class DragElement {
     }
     addMobileListener() {
         this.elmnt.addEventListener('touchmove', (e) =>  {
-            const touchLocation = e.targetTouches[0];
-            this.elmnt.style.left = touchLocation.pageX + 'px';
-            this.elmnt.style.top = touchLocation.pageY + 'px';
+            let { pageX, pageY } = e.targetTouches[0];
+            const isBlocking = this.checkIsMoveBlocking(pageX, pageY);
+            if (isBlocking) return;
+            this.elmnt.style.left = pageX + 'px';
+            this.elmnt.style.top = pageY + 'px';
         })
     }
 
@@ -82,17 +80,27 @@ class DragElement {
         document.onmousemove = null;
     }
 
+    checkIsMoveBlocking(x, y) {
+        if (x <= 0 || y <= 0) return true;
+        return false;
+    }
+
     elementDrag (e) {
         e = e || window.event;
         e.preventDefault();
-        // calculate the new cursor position:
         this.pos1 = this.pos3 - e.clientX;
         this.pos2 = this.pos4 - e.clientY;
         this.pos3 = e.clientX;
         this.pos4 = e.clientY;
-        // set the element's new position:
-        this.elmnt.style.top = (this.elmnt.offsetTop - this.pos2) + "px";
-        this.elmnt.style.left = (this.elmnt.offsetLeft - this.pos1) + "px";
+
+        const xPosition = this.elmnt.offsetLeft - this.pos1;
+        let yPosition = this.elmnt.offsetTop - this.pos2 - 1;
+
+        const isBlocking = this.checkIsMoveBlocking(xPosition, yPosition);
+        if (isBlocking) return;
+
+        this.elmnt.style.top = yPosition + "px";
+        this.elmnt.style.left = xPosition + "px";
     }
 
 
@@ -130,15 +138,23 @@ class LocalStorageConfig {
     getDefaultConfig() {
         const config = this.config
         const qrCode = config?.qrCode ?? defaultQrCode;
-        const img = config?.img ?? defaultGifImage;
         const animationNR = config?.animation ?? defaultAnimation;
         const appUrl = config?.appUrl ?? defaultAppUrl;
-        const isPuzzle = config?.isPuzzle ?? defaultSuccessStatus;
+        const showPuzzleWidget = config?.showPuzzleWidget ?? true;
         const puzzlesAlreadyCollected = config?.puzzlesAlreadyCollected ?? 0;
         const appearingPuzzleNr = config?.appearingPuzzleNr ?? 1;
         const renderCount = config?.renderCount ?? 0;
-        const customText = config?.customText ?? 'text'
-        return { isPuzzle, img, qrCode, animationNR, appUrl, puzzlesAlreadyCollected, appearingPuzzleNr, renderCount, customText };
+        const customText = config?.customText ?? ''
+        return {
+            showPuzzleWidget,
+            qrCode,
+            animationNR,
+            appUrl,
+            puzzlesAlreadyCollected,
+            appearingPuzzleNr,
+            renderCount,
+            customText
+        };
     };
 };
 /////////////////////////////////////
@@ -148,6 +164,9 @@ class Puzzle extends LocalStorageConfig {
     constructor() {
         super()
         this.config = super.getDefaultConfig();
+        this.addedRenderCount();
+    }
+    addedRenderCount() {
         super.updateConfig({ renderCount: this.config.renderCount + 1 })
     }
     addStyles (cssRules)  {
@@ -162,9 +181,6 @@ class Puzzle extends LocalStorageConfig {
     };
     showPuzzleWidget () {
         const puzzleWidget = document.createElement('div');
-        if (this.config.puzzlesAlreadyCollected > 0) {
-            puzzleWidget.style.backgroundImage = ` url(${frameSvg})`;
-        }
         puzzleWidget.setAttribute('id', 'puzzle-widget');
         puzzleWidget.style.borderRadius = '10px';
         puzzleWidget.style.backgroundSize = 'contain';
@@ -174,36 +190,65 @@ class Puzzle extends LocalStorageConfig {
         puzzleWidget.style.zIndex = '2';
         puzzleWidget.style.left = '10px';
         puzzleWidget.style.top = '10px';
+        if (this.config.puzzlesAlreadyCollected > 0) {
+            puzzleWidget.style.backgroundImage = ` url(${frameSvg})`;
+        }
         document.body.appendChild(puzzleWidget);
         this.puzzleWidget = puzzleWidget
         new DragElement(this.puzzleWidget)
-        isPuzzleWidgetDiplayed = true;
+        isPuzzleWidgetDisplayed = true;
     }
 
     drawPuzzlesByCollectedCount () {
         const puzzleWidget = document.getElementById('puzzle-widget')
         for (let i = 0; i < this.config.puzzlesAlreadyCollected; i++) {
+            const { top, left, width, height } =  puzzlesCoordinate[i];
             const animationEl =  document.createElement('div')
             animationEl.setAttribute('id',`boomio--animation-${i}`);
-            const { top, left, width, height } =  puzzlesCoordinate[i];
             animationEl.style.top = top;
             animationEl.style.left = left;
             animationEl.style.width = width;
             animationEl.style.height = height;
             animationEl.style.position = 'absolute';
             animationEl.classList.add('boomio--animation__wrapper');
-            animationEl.classList.add('boomio--animation__wrapper--initial');
             animationEl.style.content = `url(${puzzleImagesList[i]})`;
             puzzleWidget.appendChild(animationEl);
         }
         this.startAnimation()
     }
 
+    onPuzzleClick (e){
+        const puzzle = e.target;
+        const puzzleTop = puzzle.offsetTop;
+        const puzzleLeft = puzzle.offsetLeft;
+        document.body.removeChild(puzzle)
+        this.puzzleWidget.appendChild(puzzle)
+        puzzle.classList.remove('boomio--animation__wrapper--initial')
+        puzzle.style.position = 'absolute';
+        const parentTop = puzzle.offsetParent.offsetTop;
+        const parentLeft = puzzle.offsetParent.offsetLeft;
+        puzzle.style.left = `${puzzleLeft - parentLeft}px`;
+        puzzle.style.top = `${puzzleTop - parentTop}px`;
+        e.stopPropagation();
+        e.target.removeEventListener('click',  this.onPuzzleClick);
+        this.addedRenderCount()
+        setTimeout(() => {
+            this.addPuzzleToWidget(puzzle)
+        }, 200)
+    }
+
     startAnimation () {
-        const { isPuzzle, qrCode, animationNR, puzzlesAlreadyCollected, img, renderCount, appearingPuzzleNr } = this.config
-        if (renderCount % appearingPuzzleNr !== 0) return;
-        if (!isPuzzle) return;
-        const divsize = 100;
+        const {
+            showPuzzleWidget,
+            qrCode,
+            animationNR,
+            puzzlesAlreadyCollected,
+            renderCount,
+            appearingPuzzleNr
+        } = this.config
+        if ((renderCount % appearingPuzzleNr) !== 0) return;
+        if (!showPuzzleWidget) return;
+        const puzzleSize = 100;
 
         const dash = '-';
         const pos = qrCode.indexOf(dash);
@@ -214,8 +259,8 @@ class Puzzle extends LocalStorageConfig {
         const clientWidth = document.documentElement.clientWidth
         const clientHeight = document.documentElement.clientHeight
 
-        const posx = getRandomArbitrary(puzzleWidgetSize + 20, clientWidth - divsize).toFixed();
-        const posy = getRandomArbitrary(puzzleWidgetSize + 20, clientHeight - divsize).toFixed();
+        const posx = getRandomArbitrary(puzzleWidgetSize + 20, clientWidth - puzzleSize).toFixed();
+        const posy = getRandomArbitrary(puzzleWidgetSize + 20, clientHeight - puzzleSize).toFixed();
 
         const animate = (animation) => (el) => {
             el.classList.add(`boomio--animation--${animation}`);
@@ -246,30 +291,7 @@ class Puzzle extends LocalStorageConfig {
         animationEl.style.content = `url(${puzzleImagesList[puzzlesAlreadyCollected]})`;
         animationEl.classList.remove('boomio--qr');
 
-        const removeClickListener = () => {
-            animationEl.removeEventListener('click',  onPuzzleClick);
-        }
-
-        const onPuzzleClick = (e) => {
-            const puzzle = e.target;
-            const puzzleTop = puzzle.offsetTop;
-            const puzzleLeft = puzzle.offsetLeft;
-            document.body.removeChild(puzzle)
-            this.puzzleWidget.appendChild(puzzle)
-            puzzle.classList.remove('boomio--animation__wrapper--initial')
-            puzzle.style.position = 'absolute';
-            const parentTop = puzzle.offsetParent.offsetTop;
-            const parentLeft = puzzle.offsetParent.offsetLeft;
-            puzzle.style.left = `${puzzleLeft - parentLeft}px`;
-            puzzle.style.top = `${puzzleTop - parentTop}px`;
-            e.stopPropagation();
-            setTimeout(() => {
-                this.addPuzzleToWidget(puzzle)
-            }, 200)
-            removeClickListener();
-        }
-
-        animationEl.addEventListener('click',  onPuzzleClick);
+        animationEl.addEventListener('click',  this.onPuzzleClick.bind(this));
         document.body.appendChild(animationEl);
 
         const systemFont =
@@ -338,8 +360,7 @@ class Puzzle extends LocalStorageConfig {
 			display: block !important;
 		}
 		.boomio--animation__wrapper--initial {
-			width: ${divsize}px;
-			// content: url(${img});
+			width: ${puzzleSize}px;
 			cursor: pointer;
 			transition: transform 300ms cubic-bezier(0.18, 0.89, 0.32, 1.28);
 			animation-duration: ${duration};
