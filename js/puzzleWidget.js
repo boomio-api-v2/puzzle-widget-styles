@@ -94,7 +94,7 @@ class DragElement {
         this.pos4 = e.clientY;
 
         const xPosition = this.elmnt.offsetLeft - this.pos1;
-        let yPosition = this.elmnt.offsetTop - this.pos2 - 1;
+        const yPosition = this.elmnt.offsetTop - this.pos2;
 
         const isBlocking = this.checkIsMoveBlocking(xPosition, yPosition);
         if (isBlocking) return;
@@ -160,7 +160,7 @@ class LocalStorageConfig {
 /////////////////////////////////////
 
 ////////Puzzle Class ////////////
-class Puzzle extends LocalStorageConfig {
+class PuzzleWidget extends LocalStorageConfig {
     constructor() {
         super()
         this.config = super.getDefaultConfig();
@@ -930,7 +930,7 @@ class Puzzle extends LocalStorageConfig {
 
 document.onreadystatechange = () => {
     if (document.readyState !== 'complete') return;
-    const puzzle = new Puzzle()
+    const puzzle = new PuzzleWidget()
     puzzle.showPuzzleWidget()
     if (puzzle.config.puzzlesAlreadyCollected > 0) {
         puzzle.drawPuzzlesByCollectedCount()
