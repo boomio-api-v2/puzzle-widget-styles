@@ -15,9 +15,9 @@ const playStoreImage =
 const dotImage =
     'https://github.com/boomio-api-v2/easter-egg-styles/blob/main/img/dot.png?raw=true';
 
-const isMobileDevice = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-
 const frameSvg = 'https://github.com/boomio-api-v2/puzzle-widget-styles/blob/main/img/frame.png?raw=true';
+
+const isMobileDevice = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
 
 const puzzlesCoordinate = [
     { top: '0px', left: '0px', width: '89.84px', height: '112.33px' },
@@ -160,7 +160,7 @@ class LocalStorageConfig {
 /////////////////////////////////////
 
 ////////Puzzle Class ////////////
-class PuzzleWidget extends LocalStorageConfig {
+class Puzzle extends LocalStorageConfig {
     constructor() {
         super()
         this.config = super.getDefaultConfig();
@@ -187,7 +187,7 @@ class PuzzleWidget extends LocalStorageConfig {
         puzzleWidget.style.width = `${puzzleWidgetSize}px`;
         puzzleWidget.style.height = `${puzzleWidgetSize}px`;
         puzzleWidget.style.position = 'fixed';
-        puzzleWidget.style.zIndex = '2';
+        puzzleWidget.style.zIndex = '1000';
         puzzleWidget.style.left = '10px';
         puzzleWidget.style.top = '10px';
         if (this.config.puzzlesAlreadyCollected > 0) {
@@ -230,11 +230,10 @@ class PuzzleWidget extends LocalStorageConfig {
         puzzle.style.left = `${puzzleLeft - parentLeft}px`;
         puzzle.style.top = `${puzzleTop - parentTop}px`;
         e.stopPropagation();
-        e.target.removeEventListener('click',  this.onPuzzleClick);
         this.addedRenderCount()
         setTimeout(() => {
             this.addPuzzleToWidget(puzzle)
-        }, 200)
+        }, 100)
     }
 
     startAnimation () {
@@ -291,7 +290,7 @@ class PuzzleWidget extends LocalStorageConfig {
         animationEl.style.content = `url(${puzzleImagesList[puzzlesAlreadyCollected]})`;
         animationEl.classList.remove('boomio--qr');
 
-        animationEl.addEventListener('click',  this.onPuzzleClick.bind(this));
+        animationEl.addEventListener('click',  this.onPuzzleClick.bind(this), { once: true });
         document.body.appendChild(animationEl);
 
         const systemFont =
@@ -314,6 +313,7 @@ class PuzzleWidget extends LocalStorageConfig {
             width: 100%;
             z-index: 100000;
             position: absolute;
+            cursor: pointer;
             color: white;
             font-weight: bold;
             top: 50px;
@@ -324,9 +324,11 @@ class PuzzleWidget extends LocalStorageConfig {
             position: absolute;
             top: 0px;
             left: 0px;
+            z-index: 1000;
         }
         .boomio--puzzle-widget {
             // background-image: url(${frameSvg});
+            cursor: pointer;
             background-color: #F5F5F5;
             border-radius: 10px;
             background-size: contain;
@@ -861,7 +863,7 @@ class PuzzleWidget extends LocalStorageConfig {
         let { puzzlesAlreadyCollected } = this.config
         const { top, left } =  puzzlesCoordinate[puzzlesAlreadyCollected];
 
-        element.style.transition = 'all 2s ease'
+        element.style.transition = 'all 1s ease'
         element.style.top = top;
         element.style.left = left;
         puzzlesAlreadyCollected += 1;
@@ -875,7 +877,7 @@ class PuzzleWidget extends LocalStorageConfig {
             } else {
                 this.startAnimation()
             }
-        }, 2000)
+        }, 1000)
     }
 
 
@@ -930,7 +932,7 @@ class PuzzleWidget extends LocalStorageConfig {
 
 document.onreadystatechange = () => {
     if (document.readyState !== 'complete') return;
-    const puzzle = new PuzzleWidget()
+    const puzzle = new Puzzle()
     puzzle.showPuzzleWidget()
     if (puzzle.config.puzzlesAlreadyCollected > 0) {
         puzzle.drawPuzzlesByCollectedCount()
