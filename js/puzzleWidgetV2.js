@@ -73,13 +73,22 @@ class DragElement {
         }
     }
     addMobileListener() {
+        let mobileX = 0;
+        let mobileY = 0;
         this.elmnt.addEventListener('touchmove', (e) =>  {
-            let { pageX, pageY } = e.targetTouches[0];
-            const isBlocking = this.checkIsMoveBlocking(pageX, pageY);
+            const { clientX, clientY } = e.touches[0];
+            const isBlocking = this.checkIsMoveBlocking(clientX, clientY);
             if (isBlocking) return;
-            this.elmnt.style.left = pageX + 'px';
-            this.elmnt.style.top = pageY + 'px';
+            this.elmnt.style.left = (clientX - mobileX) + 'px';
+            this.elmnt.style.top = (clientY - mobileY) + 'px';
         })
+        this.elmnt.addEventListener('touchstart', (e) => {
+            const { clientX, clientY } = e.touches[0]
+            const { left, top } = e.target.getBoundingClientRect();
+            mobileX = clientX - left - 10;
+            mobileY = clientY - top - 10;
+        })
+
     }
 
     closeDragElement () {
@@ -328,7 +337,7 @@ class PuzzleWidgetV2 extends LocalStorageConfig {
             text-align: center;
         }
         #boomio--qr {
-            position: absolute;
+            position: fixed;
             top: 0px;
             left: 0px;
             z-index: 1000;
