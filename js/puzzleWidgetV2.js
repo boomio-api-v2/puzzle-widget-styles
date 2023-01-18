@@ -14,8 +14,7 @@ const playStoreImage =
 const dotImage =
     'https://github.com/boomio-api-v2/easter-egg-styles/blob/main/img/dot.png?raw=true';
 
-// const frameSvg = 'https://github.com/boomio-api-v2/puzzle-widget-styles/blob/main/img/frame.png?raw=true';
-const frameSvg = '/img/frame.png';
+const frameSvg = 'https://github.com/boomio-api-v2/puzzle-widget-styles/blob/main/img/frame.png?raw=true';
 
 const isMobileDevice = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
 
@@ -34,18 +33,11 @@ const puzzlesCoordinateForDesktop =  [
 ]
 
 const puzzlesCoordinate = isMobileDevice ? puzzlesCoordinateForMobile : puzzlesCoordinateForDesktop;
-// const puzzleImagesList = [
-//     'https://github.com/boomio-api-v2/puzzle-widget-styles/blob/main/img/puzzle-1.png?raw=true',
-//     'https://github.com/boomio-api-v2/puzzle-widget-styles/blob/main/img/puzzle-2.png?raw=true',
-//     'https://github.com/boomio-api-v2/puzzle-widget-styles/blob/main/img/puzzle-3.png?raw=true',
-//     'https://github.com/boomio-api-v2/puzzle-widget-styles/blob/main/img/puzzle-4.png?raw=true',
-// ];
-
 const puzzleImagesList = [
-    '/img/puzzle-1.png',
-    '/img/puzzle-2.png',
-    '/img/puzzle-3.png',
-    '/img/puzzle-4.png',
+    'https://github.com/boomio-api-v2/puzzle-widget-styles/blob/main/img/puzzle-1.png?raw=true',
+    'https://github.com/boomio-api-v2/puzzle-widget-styles/blob/main/img/puzzle-2.png?raw=true',
+    'https://github.com/boomio-api-v2/puzzle-widget-styles/blob/main/img/puzzle-3.png?raw=true',
+    'https://github.com/boomio-api-v2/puzzle-widget-styles/blob/main/img/puzzle-4.png?raw=true',
 ];
 
 const puzzleWidgetSize = isMobileDevice ? 135 : 185;
@@ -410,9 +402,9 @@ class PuzzleWidgetV2 extends LocalStorageConfig {
 			transform: scale(1.1);
 		}
 
-		.boomio--animation__wrapper--initial:active {
-			transform: scale(.9);
-		}
+		// .boomio--animation__wrapper--initial:active {
+		// 	transform: scale(.9);
+		// }
 
 		.boomio--animation__wrapper--qr {
 			animation-name: boomio-animate-qr;
@@ -937,10 +929,6 @@ class PuzzleWidgetV2 extends LocalStorageConfig {
         const closeBtn = document.createElement('div')
         closeBtn.classList.add('custom-close-icon')
         closeBtn.innerHTML = '&#x2715; ';
-        closeBtn.addEventListener('onmouseover', (e) => {
-            e.preventDefault()
-            e.stopPropagation()
-        },)
         closeBtn.addEventListener('click', (e) => {
             e.stopPropagation()
             e.preventDefault()
