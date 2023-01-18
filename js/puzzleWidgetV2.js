@@ -7,7 +7,6 @@ const defaultQrCode = '3877216F19FE4DD59E0C08C3BA569A0F';
 
 const defaultAppUrl = 'https://www.boomio.com/?coupon_id=3877216F19FE4DD59E0C08C3BA569A0F';
 
-
 const appStoreImage =
     'https://github.com/boomio-api-v2/easter-egg-styles/blob/main/img/appstore.png?raw=true';
 const playStoreImage =
@@ -19,13 +18,21 @@ const frameSvg = 'https://github.com/boomio-api-v2/puzzle-widget-styles/blob/mai
 
 const isMobileDevice = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
 
-const puzzlesCoordinate = [
+const puzzlesCoordinateForMobile = [
+    { top: '0px', left: '0px', width: '62.84px', height: '81.33px' },
+    { top: '0px', left: '47px', width: '80.3px', height: '60.86px' },
+    { top: '60px', left: '0px', width: '80.3px', height: '69.86px' },
+    { top: '41px', left: '60px', width: '66.84px', height: '88.3px' },
+];
+
+const puzzlesCoordinateForDesktop =  [
     { top: '0px', left: '0px', width: '89.84px', height: '112.33px' },
     { top: '0px', left: '67px', width: '112.3px', height: '89.86px' },
     { top: '87px', left: '0px', width: '112.3px', height: '89.86px' },
     { top: '64px', left: '89px', width: '89.84px', height: '112.33px' },
 ]
 
+const puzzlesCoordinate = isMobileDevice ? puzzlesCoordinateForMobile : puzzlesCoordinateForDesktop;
 const puzzleImagesList = [
     'https://github.com/boomio-api-v2/puzzle-widget-styles/blob/main/img/puzzle-1.png?raw=true',
     'https://github.com/boomio-api-v2/puzzle-widget-styles/blob/main/img/puzzle-2.png?raw=true',
@@ -33,7 +40,7 @@ const puzzleImagesList = [
     'https://github.com/boomio-api-v2/puzzle-widget-styles/blob/main/img/puzzle-4.png?raw=true',
 ];
 
-const puzzleWidgetSize = 185;
+const puzzleWidgetSize = isMobileDevice ? 130 : 185;
 
 let isPuzzleWidgetDisplayed = false;
 
@@ -317,7 +324,7 @@ class PuzzleWidgetV2 extends LocalStorageConfig {
             color: white;
             font-weight: bold;
             top: 50px;
-            font-size: 36px;
+            font-size: ${isMobileDevice ? 18 : 36}px;
             text-align: center;
         }
         #boomio--qr {
