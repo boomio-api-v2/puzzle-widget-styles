@@ -14,7 +14,8 @@ const playStoreImage =
 const dotImage =
     'https://github.com/boomio-api-v2/easter-egg-styles/blob/main/img/dot.png?raw=true';
 
-const frameSvg = 'https://github.com/boomio-api-v2/puzzle-widget-styles/blob/main/img/frame.png?raw=true';
+// const frameSvg = 'https://github.com/boomio-api-v2/puzzle-widget-styles/blob/main/img/frame.png?raw=true';
+const frameSvg = '/img/frame.png';
 
 const isMobileDevice = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
 
@@ -33,11 +34,18 @@ const puzzlesCoordinateForDesktop =  [
 ]
 
 const puzzlesCoordinate = isMobileDevice ? puzzlesCoordinateForMobile : puzzlesCoordinateForDesktop;
+// const puzzleImagesList = [
+//     'https://github.com/boomio-api-v2/puzzle-widget-styles/blob/main/img/puzzle-1.png?raw=true',
+//     'https://github.com/boomio-api-v2/puzzle-widget-styles/blob/main/img/puzzle-2.png?raw=true',
+//     'https://github.com/boomio-api-v2/puzzle-widget-styles/blob/main/img/puzzle-3.png?raw=true',
+//     'https://github.com/boomio-api-v2/puzzle-widget-styles/blob/main/img/puzzle-4.png?raw=true',
+// ];
+
 const puzzleImagesList = [
-    'https://github.com/boomio-api-v2/puzzle-widget-styles/blob/main/img/puzzle-1.png?raw=true',
-    'https://github.com/boomio-api-v2/puzzle-widget-styles/blob/main/img/puzzle-2.png?raw=true',
-    'https://github.com/boomio-api-v2/puzzle-widget-styles/blob/main/img/puzzle-3.png?raw=true',
-    'https://github.com/boomio-api-v2/puzzle-widget-styles/blob/main/img/puzzle-4.png?raw=true',
+    '/img/puzzle-1.png',
+    '/img/puzzle-2.png',
+    '/img/puzzle-3.png',
+    '/img/puzzle-4.png',
 ];
 
 const puzzleWidgetSize = isMobileDevice ? 135 : 185;
@@ -641,7 +649,7 @@ class Puzzle extends LocalStorageConfig {
         }
 	
         .coupon__preview__body {
-            padding: 40px 32px;
+            padding: 40px 20px;
         }
 
 		@import url('https://fonts.googleapis.com/css?family=Montserrat');
@@ -666,7 +674,7 @@ class Puzzle extends LocalStorageConfig {
 
         .product-design-bg-2 {
             background-color: #ffffff;
-            width: 375px;
+            width: ${isMobileDevice ? '100%' : '375px'};
             height: -moz-fit-content;
             height: fit-content;
             padding: 20px;
@@ -675,7 +683,8 @@ class Puzzle extends LocalStorageConfig {
         }
 
         .coupon_discount_modal .coupon_preview_card_info {
-            padding: 10px 30px;
+            display: flex;
+            justify-content: center;
             cursor: pointer;
         }
 
@@ -750,7 +759,6 @@ class Puzzle extends LocalStorageConfig {
 
         .coupon_discount_modal .coupon__preview__card__header {
             padding: 0;
-            margin-top: 10%;
             text-align: center;
         }
 
@@ -765,10 +773,12 @@ class Puzzle extends LocalStorageConfig {
 
         .coupon_discount_modal .coupon_info {
             padding: 32px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
         }
 
         .coupon_discount_modal .coupon_preview_card_info {
-            padding: 10px 30px;
             cursor: pointer;
         }
 
@@ -810,7 +820,7 @@ class Puzzle extends LocalStorageConfig {
 
 
         .coupon_discount_modal .coupon_preview_card_footer {
-            margin-top: 8%;
+            margin-top: 0px;
         }
 		.coupon_discount_modal .coupon_preview_card_footer a {
             color:black
@@ -863,10 +873,18 @@ class Puzzle extends LocalStorageConfig {
 		.close{
 			position: absolute;
 			right: 7px;
-			font-size: 20px;
+			font-size: 18px;
 			top: 6px;
 			color: #000;
 			cursor: pointer;
+            background-color: lightgray;
+            border-radius: 100px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 30px;
+            height: 30px;
+           
 		}
 		.custom-close-icon {
 		    display: flex;
@@ -894,25 +912,37 @@ class Puzzle extends LocalStorageConfig {
         document.body.removeChild(this.puzzleWidget)
         const { qrCode } = this.config;
         const qrEl = document.createElement('div');
+
         qrEl.setAttribute('id', 'boomio--qr');
         qrEl.innerHTML = this.qrCodeInnerHtml();
 
         document.body.append(qrEl);
         new QRCode('qrcodeShowHtml', {
             text: qrCode,
-            width: 250,
-            height: 250,
+            width: 300,
+            height: 300,
             colorDark: '#000000',
             colorLight: '#ffffff',
             correctLevel: QRCode.CorrectLevel.H,
         });
-        document.getElementById('qrcodeShow').style.display = 'block';
-        document.getElementById('coupon_div').style.display = 'none';
+        const coupon = document.getElementById('coupon_div');
+        const qrcodeShow = document.getElementById('qrcodeShow');
+        qrcodeShow.style.display = isMobileDevice ? 'none' : 'block';
+        coupon.style.display = isMobileDevice ? 'block' : 'none';
         document.getElementById('close').onclick = (e) => {
             const elementRemove = document.getElementById('boomio--qr');
             elementRemove.remove();
             e.stopPropagation();
         };
+        if (isMobileDevice) return;
+        qrcodeShow.onclick = () => {
+            coupon.style.display = 'block'
+            qrcodeShow.style.display = 'none'
+        }
+        coupon.onclick = () => {
+            qrcodeShow.style.display = 'block'
+            coupon.style.display = 'none'
+        }
     }
 
     addWidgetText = () => {
@@ -977,7 +1007,7 @@ class Puzzle extends LocalStorageConfig {
 					<div class="coupon_info">
 						<h3>20 %</h3>
 						<h3>Discount</h3>
-						<p>Unique code: <span id="qrcode">${this.config.qrCode}</span> </p>
+						<p style="text-align: center; margin-top: 8px">Unique code: <span id="qrcode">${this.config.qrCode}</span> </p>
 					</div>
 					<div class="coupon__preview__card__after"></div>
 					<div class="coupon__preview__card__befor"></div>
@@ -994,12 +1024,14 @@ class Puzzle extends LocalStorageConfig {
 					</div>
 				</div>
 				</a>
-				<div class="d-flex pt-2">
+				${!isMobileDevice ? (
+                    `		<div class="d-flex pt-2">
 					<div class="appstore-img "><a href=""><img src="${appStoreImage}"
 								alt="App Store"></a></div>
 					<div class="playstore-img"><a href=${this.config.appUrl}"><img src="${playStoreImage}"
 								alt="Play Store"></a></div>
-				</div>
+				</div>`
+                ) : ''}
 				<div>
 					<p class="footer-dec">Don't have time now? Make a screenshot and use it later!</p>
 				</div>
