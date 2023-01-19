@@ -48,6 +48,10 @@ let isPuzzleWidgetDisplayed = false;
 
 const getRandomArbitrary = (min, max) => Math.random() * (max - min) + min;
 
+const assignStyle = (style, properties) => {
+    Object.assign(style, properties);
+}
+
 /////// Drag Element /////////
 
 class DragElement {
@@ -158,7 +162,7 @@ class LocalStorageConfig {
         const animationNR = config?.animation ?? defaultAnimation;
         const appUrl = config?.appUrl ?? defaultAppUrl;
         const showPuzzleWidget = config?.showPuzzleWidget ?? true;
-        const puzzlesAlreadyCollected = config?.puzzlesAlreadyCollected ?? 0;
+        const puzzlesCollected = config?.puzzlesCollected ?? 0;
         const appearingPuzzleNr = config?.appearingPuzzleNr ?? 1;
         const renderCount = config?.renderCount ?? 0;
         const customText = config?.customText ?? '';
@@ -169,7 +173,7 @@ class LocalStorageConfig {
             qrCode,
             animationNR,
             appUrl,
-            puzzlesAlreadyCollected,
+            puzzlesCollected,
             appearingPuzzleNr,
             renderCount,
             customText
@@ -185,10 +189,10 @@ class Puzzle extends LocalStorageConfig {
         this.config = super.getDefaultConfig();
         this.addedRenderCount();
     }
-    addedRenderCount() {
+    addedRenderCount = () => {
         super.updateConfig({ renderCount: this.config.renderCount + 1 })
     }
-    addStyles (cssRules)  {
+    addStyles = (cssRules) => {
         const style = document.createElement('style');
         style.setAttribute('id', 'boomio--stylesheet');
         document.getElementsByTagName('head')[0].appendChild(style);
@@ -198,13 +202,16 @@ class Puzzle extends LocalStorageConfig {
             style.appendChild(document.createTextNode(cssRules));
         }
     };
-    showPuzzleWidget () {
+    showPuzzleWidget = () => {
         const puzzleWidget = document.createElement('div');
         puzzleWidget.setAttribute('id', 'puzzle-widget');
-        puzzleWidget.style.width = `${puzzleWidgetSize}px`;
-        puzzleWidget.style.height = `${puzzleWidgetSize}px`;
+        const size = `${puzzleWidgetSize}px`;
+        assignStyle(puzzleWidget.style, {
+            width: size,
+            height: size
+        })
 
-        if (this.config.puzzlesAlreadyCollected > 0) {
+        if (this.config.puzzlesCollected > 0) {
             puzzleWidget.style.backgroundImage = ` url(${frameSvg})`;
             this.addCloseIconToElement(puzzleWidget)
         }
@@ -215,20 +222,24 @@ class Puzzle extends LocalStorageConfig {
         isPuzzleWidgetDisplayed = true;
     }
 
-    drawPuzzlesByCollectedCount () {
-        const puzzleWidget = document.getElementById('puzzle-widget')
-        for (let i = 0; i < this.config.puzzlesAlreadyCollected; i++) {
-            const { top, left, width, height } =  puzzlesCoordinate[i];
+    drawPuzzlesByCollectedCount = () => {
+        for (let i = 0; i < this.config.puzzlesCollected; i++) {
+            const backgroundImage = `url(${puzzleImagesList[i]})`;
+            const { top, left, width, height } = puzzlesCoordinate[i];
+
             const animationEl =  document.createElement('div')
             animationEl.setAttribute('id',`boomio--animation-${i}`);
-            animationEl.style.top = top;
-            animationEl.style.left = left;
-            animationEl.style.width = width;
-            animationEl.style.height = height;
-            animationEl.style.position = 'absolute';
             animationEl.classList.add('boomio--animation__wrapper');
-            animationEl.style.backgroundImage = `url(${puzzleImagesList[i]})`;
-            puzzleWidget.appendChild(animationEl);
+            assignStyle(animationEl.style, {
+                top,
+                left,
+                width,
+                height,
+                backgroundImage,
+                position: 'absolute'
+            })
+
+            this.puzzleWidget.appendChild(animationEl);
         }
         this.startAnimation()
     }
@@ -236,34 +247,40 @@ class Puzzle extends LocalStorageConfig {
     onPuzzleClick = (e) => {
         const puzzle = e.target;
         puzzle.childNodes[0].remove()
-        const puzzleTop = puzzle.offsetTop;
-        const puzzleLeft = puzzle.offsetLeft;
+        const { offsetTop , offsetLeft } = puzzle;
+
         document.body.removeChild(puzzle)
         this.puzzleWidget.appendChild(puzzle)
+
         puzzle.classList.remove('boomio--animation__wrapper--initial')
         puzzle.style.position = 'absolute';
-        const parentTop = puzzle.offsetParent.offsetTop;
-        const parentLeft = puzzle.offsetParent.offsetLeft;
-        puzzle.style.left = `${puzzleLeft - parentLeft}px`;
-        puzzle.style.top = `${puzzleTop - parentTop}px`;
+
+        const { offsetTop: parentTop, offsetLeft: parentLeft } = puzzle.offsetParent;
+
+        assignStyle(puzzle.style, {
+            left: `${offsetLeft - parentLeft}px`,
+            top: `${offsetTop - parentTop}px`
+        })
+
         e.stopPropagation();
         this.addedRenderCount()
+
         setTimeout(() => {
-            this.addPuzzleToWidget(puzzle)
+            this.startPuzzleMoving(puzzle)
         }, 100)
         setTimeout(() => {
             this.addCloseIconToElement(this.puzzleWidget)
         }, 1000)
     }
 
-    startAnimation () {
+    startAnimation = () => {
         const {
             qrCode,
             animationNR,
-            puzzlesAlreadyCollected,
+            puzzlesCollected,
             renderCount,
             appearingPuzzleNr,
-        } = this.config
+        } = this.config;
         if ((renderCount % appearingPuzzleNr) !== 0) return;
         const puzzleSize = 100;
 
@@ -272,12 +289,6 @@ class Puzzle extends LocalStorageConfig {
         if (pos != -1) {
             this.config.qrCode = qrCode.substring(0, pos);
         }
-
-        const clientWidth = document.documentElement.clientWidth
-        const clientHeight = document.documentElement.clientHeight
-
-        const posx = getRandomArbitrary(puzzleWidgetSize + 20, clientWidth - puzzleSize - 10).toFixed();
-        const posy = getRandomArbitrary(puzzleWidgetSize + 20, clientHeight - puzzleSize - 10).toFixed();
 
         const animate = (animation) => (el) => {
             el.classList.add(`boomio--animation--${animation}`);
@@ -297,15 +308,17 @@ class Puzzle extends LocalStorageConfig {
             animate('lightSpeedInLeft'),
             animate('rollIn'),
         ];
-        const { width, height } =  puzzlesCoordinate[puzzlesAlreadyCollected];
+        const { width, height } =  puzzlesCoordinate[puzzlesCollected];
         const animFunc = animArr[animationNR];
         const animationEl = document.createElement('div');
-        animationEl.setAttribute('id', `boomio--animation-${puzzlesAlreadyCollected}`);
+        animationEl.setAttribute('id', `boomio--animation-${puzzlesCollected}`);
         animationEl.classList.add('boomio--animation__wrapper');
         animationEl.classList.add('boomio--animation__wrapper--initial');
-        animationEl.style.width = width;
-        animationEl.style.height = height
-        animationEl.style.backgroundImage = `url(${puzzleImagesList[puzzlesAlreadyCollected]})`;
+        assignStyle(animationEl.style, {
+            width,
+            height,
+            backgroundImage: `url(${puzzleImagesList[puzzlesCollected]})`
+        })
         animationEl.classList.remove('boomio--qr');
         this.addCloseIconToElement(animationEl);
 
@@ -317,6 +330,11 @@ class Puzzle extends LocalStorageConfig {
         const duration = '1000ms';
         const easingBack = 'cubic-bezier(0.18, 0.89, 0.32, 1.28)';
         const easing = 'cubic-bezier(0.22, 0.61, 0.36, 1)';
+
+        const { clientWidth, clientHeight } = document.documentElement;
+
+        const posx = getRandomArbitrary(puzzleWidgetSize + 20, clientWidth - puzzleSize - 10).toFixed();
+        const posy = getRandomArbitrary(puzzleWidgetSize + 20, clientHeight - puzzleSize - 10).toFixed();
 
         const initialPosition = {
             x: animationEl.clientWidth + parseInt(posy),
@@ -897,35 +915,34 @@ class Puzzle extends LocalStorageConfig {
         };
     }
 
-    addWidgetText() {
+    addWidgetText = () => {
         const widgetText = document.createElement('div');
         widgetText.classList.add('boomio--puzzle-widget-text')
         widgetText.innerText = this.config.customText;
         this.puzzleWidget.appendChild(widgetText)
     }
 
-    addPuzzleToWidget (element)  {
-        let { puzzlesAlreadyCollected } = this.config
-        const { top, left } =  puzzlesCoordinate[puzzlesAlreadyCollected];
-
-        element.style.transition = 'all 1s ease'
-        element.style.top = top;
-        element.style.left = left;
-        puzzlesAlreadyCollected += 1;
-        super.updateConfig({ puzzlesAlreadyCollected })
-        setTimeout(() => {
-            this.puzzleWidget.style.backgroundImage = ` url(${frameSvg})`;
-            if (puzzlesAlreadyCollected >= 4) {
-                this.addWidgetText()
-                this.puzzleWidget.onclick = this.showQR;
-                super.updateConfig({ puzzlesAlreadyCollected: 0 })
-            } else {
-                this.startAnimation()
-            }
-        }, 1000)
+    addPuzzleToWidget = () => {
+        this.puzzleWidget.style.backgroundImage = ` url(${frameSvg})`;
+        if (this.config.puzzlesCollected >= 4) {
+            this.addWidgetText()
+            this.puzzleWidget.onclick = this.showQR;
+            super.updateConfig({ puzzlesCollected: 0 })
+        } else {
+            this.startAnimation()
+        }
     }
 
-    addCloseIconToElement (element) {
+    startPuzzleMoving = (element) =>  {
+        let { puzzlesCollected } = this.config
+        const { top, left } =  puzzlesCoordinate[puzzlesCollected]
+        assignStyle(element.style ,{ top, left, transition: 'all 1s ease' })
+        puzzlesCollected += 1;
+        super.updateConfig({ puzzlesCollected })
+        setTimeout(this.addPuzzleToWidget, 1000)
+    }
+
+    addCloseIconToElement = (element) => {
         const closeBtn = document.createElement('div')
         closeBtn.classList.add('custom-close-icon')
         closeBtn.innerHTML = '&#x2715; ';
@@ -937,7 +954,7 @@ class Puzzle extends LocalStorageConfig {
         element.appendChild(closeBtn)
     }
 
-    disableWidgetAndRemoveAllElements() {
+    disableWidgetAndRemoveAllElements = () => {
         this.updateConfig({ boomioClosed: true })
         this.puzzleWidget.remove()
         this.animationEl.remove()
@@ -998,11 +1015,10 @@ document.onreadystatechange = () => {
     const puzzle = new Puzzle();
     const { showPuzzleWidget, boomioClosed } = puzzle.config;
     if (!showPuzzleWidget || boomioClosed){
-        return;;
+        return;
     }
-
     puzzle.showPuzzleWidget()
-    if (puzzle.config.puzzlesAlreadyCollected > 0) {
+    if (puzzle.config.puzzlesCollected > 0) {
         puzzle.drawPuzzlesByCollectedCount()
     } else {
         puzzle.startAnimation();

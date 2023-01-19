@@ -5,7 +5,7 @@ const defaultConfig = {
     showPuzzleWidget: true,
     customText: '20% discount',
     appearingPuzzleNr: 1,
-    puzzlesAlreadyCollected: 0
+    puzzlesCollected: 0
 };
 
 const isData = localStorage.getItem('boomioPluginPuzzleConfig')
