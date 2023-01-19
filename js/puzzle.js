@@ -20,9 +20,9 @@ const isMobileDevice = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera
 
 const puzzlesCoordinateForMobile = [
     { top: '0px', left: '0px', width: '62.84px', height: '83.33px' },
-    { top: '0px', left: '47px', width: '80.3px', height: '66.86px' },
+    { top: '0px', left: '47px', width: '83.3px', height: '66.86px' },
     { top: '63px', left: '0px', width: '86.3px', height: '69.86px' },
-    { top: '44px', left: '62px', width: '66.84px', height: '88.3px' },
+    { top: '44px', left: '62px', width: '67.84px', height: '88.3px' },
 ];
 
 const puzzlesCoordinateForDesktop =  [
@@ -179,7 +179,7 @@ class LocalStorageConfig {
 /////////////////////////////////////
 
 ////////Puzzle Class ////////////
-class PuzzleWidgetV3 extends LocalStorageConfig {
+class Puzzle extends LocalStorageConfig {
     constructor() {
         super()
         this.config = super.getDefaultConfig();
@@ -276,8 +276,8 @@ class PuzzleWidgetV3 extends LocalStorageConfig {
         const clientWidth = document.documentElement.clientWidth
         const clientHeight = document.documentElement.clientHeight
 
-        const posx = getRandomArbitrary(puzzleWidgetSize + 20, clientWidth - puzzleSize).toFixed();
-        const posy = getRandomArbitrary(puzzleWidgetSize + 20, clientHeight - puzzleSize).toFixed();
+        const posx = getRandomArbitrary(puzzleWidgetSize + 20, clientWidth - puzzleSize - 10).toFixed();
+        const posy = getRandomArbitrary(puzzleWidgetSize + 20, clientHeight - puzzleSize - 10).toFixed();
 
         const animate = (animation) => (el) => {
             el.classList.add(`boomio--animation--${animation}`);
@@ -333,8 +333,8 @@ class PuzzleWidgetV3 extends LocalStorageConfig {
             background-size: contain;
             position: fixed;
             z-index: 1000;
-            left: 10px;
-            right: 10px;
+            left: 15px;
+            top: 15px;
         }
         .boomio--puzzle-widget-text {
             width: 100%;
@@ -344,7 +344,7 @@ class PuzzleWidgetV3 extends LocalStorageConfig {
             color: white;
             font-weight: bold;
             top: 50px;
-            font-size: ${isMobileDevice ? 18 : 36}px;
+            font-size: ${isMobileDevice ? 20 : 36}px;
             text-align: center;
         }
         #boomio--qr {
@@ -995,7 +995,7 @@ class PuzzleWidgetV3 extends LocalStorageConfig {
 
 document.onreadystatechange = () => {
     if (document.readyState !== 'complete') return;
-    const puzzle = new PuzzleWidgetV3();
+    const puzzle = new Puzzle();
     const { showPuzzleWidget, boomioClosed } = puzzle.config;
     if (!showPuzzleWidget || boomioClosed){
         return;;
