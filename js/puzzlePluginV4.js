@@ -187,6 +187,7 @@ class Puzzle extends LocalStorageConfig {
     constructor() {
         super()
         this.config = super.getDefaultConfig();
+        this.isCloseIconAddedToWidget = false;
         this.addedRenderCount();
     }
     addedRenderCount = () => {
@@ -214,6 +215,7 @@ class Puzzle extends LocalStorageConfig {
         if (this.config.puzzlesCollected > 0) {
             puzzleWidget.style.backgroundImage = ` url(${frameSvg})`;
             this.addCloseIconToElement(puzzleWidget)
+            this.isCloseIconAddedToWidget = true;
         }
 
         document.body.appendChild(puzzleWidget);
@@ -269,8 +271,33 @@ class Puzzle extends LocalStorageConfig {
             this.startPuzzleMoving(puzzle)
         }, 100)
         setTimeout(() => {
+            if (this.isCloseIconAddedToWidget) return;
             this.addCloseIconToElement(this.puzzleWidget)
+            this.isCloseIconAddedToWidget = true;
         }, 1000)
+    }
+
+    getAnimateFunction = (nr) => {
+        const animate = (animation) => (el) => {
+            el.classList.add(`boomio--animation--${animation}`);
+        };
+        const animArr = [
+            animate('moveRight'),
+            animate('moveLeft'),
+            animate('moveDown'),
+            animate('moveUp'),
+            animate('fadeIn'),
+            animate('moveDiagonalDown'),
+            animate('rotateRight'),
+            animate('zoomIn'),
+            animate('skewLeft'),
+            animate('moveDiagonalUp'),
+            animate('tada'),
+            animate('lightSpeedInLeft'),
+            animate('rollIn'),
+        ];
+
+        return animArr[nr]
     }
 
     startAnimation = () => {
@@ -290,26 +317,7 @@ class Puzzle extends LocalStorageConfig {
             this.config.qrCode = qrCode.substring(0, pos);
         }
 
-        const animate = (animation) => (el) => {
-            el.classList.add(`boomio--animation--${animation}`);
-        };
-        const animArr = [
-            animate('moveRight'),
-            animate('moveLeft'),
-            animate('moveDown'),
-            animate('moveUp'),
-            animate('fadeIn'),
-            animate('moveDiagonalDown'),
-            animate('rotateRight'),
-            animate('zoomIn'),
-            animate('skewLeft'),
-            animate('moveDiagonalUp'),
-            animate('tada'),
-            animate('lightSpeedInLeft'),
-            animate('rollIn'),
-        ];
         const { width, height } =  puzzlesCoordinate[puzzlesCollected];
-        const animFunc = animArr[animationNR];
         const animationEl = document.createElement('div');
         animationEl.setAttribute('id', `boomio--animation-${puzzlesCollected}`);
         animationEl.classList.add('boomio--animation__wrapper');
@@ -333,8 +341,8 @@ class Puzzle extends LocalStorageConfig {
 
         const { clientWidth, clientHeight } = document.documentElement;
 
-        const posx = getRandomArbitrary(puzzleWidgetSize + 20, clientWidth - puzzleSize - 10).toFixed();
-        const posy = getRandomArbitrary(puzzleWidgetSize + 20, clientHeight - puzzleSize - 10).toFixed();
+        const posx = getRandomArbitrary(puzzleWidgetSize + 25, clientWidth - puzzleSize - 10).toFixed();
+        const posy = getRandomArbitrary(puzzleWidgetSize + 25, clientHeight - puzzleSize - 10).toFixed();
 
         const initialPosition = {
             x: animationEl.clientWidth + parseInt(posy),
@@ -351,8 +359,8 @@ class Puzzle extends LocalStorageConfig {
             background-size: contain;
             position: fixed;
             z-index: 1000;
-            left: 15px;
-            top: 15px;
+            left: 20px;
+            top: 20px;
         }
         .boomio--puzzle-widget-text {
             width: 100%;
@@ -883,21 +891,24 @@ class Puzzle extends LocalStorageConfig {
 		    justify-content: center;
 		    align-items: center;
             position: absolute;
-            right: -10px;
+            right: -16px;
             font-size: 13px;
-            top: -10px;
+            top: -16px;
             color: #000;
             cursor: pointer;
             background-color: lightgray;
-            width: 22px;
-            height: 22px;
+            width: 16px;
+            height: 16px;
             border-radius: 20px;
+            font-size: 10px;
+            opacity: 0.45;
 		}
 		`;
 
         this.addStyles( css);
-        this.animationEl = animationEl;
+        const animFunc = this.getAnimateFunction(animationNR);
         animFunc(animationEl);
+        this.animationEl = animationEl;
     };
 
     showQR = () => {
