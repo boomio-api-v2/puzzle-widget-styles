@@ -870,22 +870,6 @@ class Puzzle extends LocalStorageConfig {
             padding-top: 11px;
             line-height: 21px;
         }
-		.close{
-			position: absolute;
-			right: 7px;
-			font-size: 18px;
-			top: 6px;
-			color: #000;
-			cursor: pointer;
-            background-color: lightgray;
-            border-radius: 100px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            width: 30px;
-            height: 30px;
-           
-		}
 		.custom-close-icon {
 		    display: flex;
 		    justify-content: center;
@@ -995,7 +979,7 @@ class Puzzle extends LocalStorageConfig {
 
 
     qrCodeInnerHtml = () =>  `<div class="product-design-bg-2 p-0 Preview-select box-show qr-div" >
-		<span class='close' id='close'>&#x2715; </span>
+		<span class='custom-close-icon' style='top: 16px; right: 10px' id='close'>&#x2715; </span>
 		<div class="coupon__preview__body coupon_discount_modal">
 
 			<div class="coupon__preview__card__header text-center d-block">
