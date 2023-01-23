@@ -401,6 +401,7 @@ class Puzzle extends LocalStorageConfig {
             cursor: move;
         }
         #widgetPreview {
+            background: white;
             position: absolute;
             width: 50px;
             height: 50px;
