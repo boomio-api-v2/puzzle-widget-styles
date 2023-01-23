@@ -186,6 +186,7 @@ class LocalStorageConfig {
 class Puzzle extends LocalStorageConfig {
     constructor() {
         super()
+        this.isPrewiewDisplayed = false;
         this.config = super.getDefaultConfig();
         this.isCloseIconAddedToWidget = false;
         this.addedRenderCount();
@@ -243,6 +244,8 @@ class Puzzle extends LocalStorageConfig {
                 this.addSmallWidgetPreview(qrSize === 50 ? 180 : 50)
             }
         }, { once: true })
+
+        this.isPrewiewDisplayed = true;
 
     }
 
@@ -998,7 +1001,9 @@ class Puzzle extends LocalStorageConfig {
 
     addPuzzleToWidget = () => {
         this.puzzleWidget.style.backgroundImage = ` url(${frameSvg})`;
-        this.addSmallWidgetPreview()
+        if (!this.isPrewiewDisplayed) {
+            this.addSmallWidgetPreview()
+        }
         if (this.config.puzzlesCollected >= 4) {
             this.addWidgetText()
             this.puzzleWidget.onclick = this.showQR;
