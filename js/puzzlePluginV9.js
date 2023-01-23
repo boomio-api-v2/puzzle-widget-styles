@@ -221,6 +221,7 @@ class Puzzle extends LocalStorageConfig {
                 </div>
 				`
         } else  {
+            widgetPreview.style.background = 'white'
             if (qrSize === 50) {
                 widgetPreview.style.left = '68px'
             }
@@ -401,7 +402,6 @@ class Puzzle extends LocalStorageConfig {
             cursor: move;
         }
         #widgetPreview {
-            background: white;
             position: absolute;
             width: 50px;
             height: 50px;
