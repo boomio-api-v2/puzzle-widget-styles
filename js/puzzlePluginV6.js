@@ -203,23 +203,69 @@ class Puzzle extends LocalStorageConfig {
             style.appendChild(document.createTextNode(cssRules));
         }
     };
+
+    addSmallWidgetPreview = (qrSize = 50) => {
+        const widgetPreview = document.createElement('div');
+        widgetPreview.setAttribute('id', 'widgetPreview')
+        this.puzzleWidget.appendChild(widgetPreview)
+
+        if (isMobileDevice) {
+            widgetPreview.innerHTML = `
+                <div class="coupon_preview_card_footer">
+                    <div class="btn-content d-flex align-items-center justify-content-center" style="height: 35px; width: 130px">
+                        <img src="${dotImage}" alt="img not find">
+                        <div class="d-flex flex-column btn-text-group ml-2"><small class="small-font">Open</small>
+                        <b>Boomio app</b>
+                        </div>
+                    </div>
+                </div>
+				`
+        } else  {
+            if (qrSize === 50) {
+                widgetPreview.style.left = '68px'
+            }
+            new QRCode('widgetPreview', {
+                text: this.config.qrCode,
+                width: qrSize,
+                height: qrSize,
+                colorDark: '#000000',
+                colorLight: '#ffffff',
+                correctLevel: QRCode.CorrectLevel.H,
+            });
+        }
+
+        widgetPreview.addEventListener('click', () => {
+            if (isMobileDevice) {
+                window.open(this.config.appUrl)
+            } else {
+                widgetPreview.remove();
+                this.addSmallWidgetPreview(qrSize === 50 ? 180 : 50)
+            }
+        }, { once: true })
+
+    }
+
     showPuzzleWidget = () => {
         const puzzleWidget = document.createElement('div');
+        const widgetSmallPreview = document.createElement('div');
         puzzleWidget.setAttribute('id', 'puzzle-widget');
+        puzzleWidget.appendChild(widgetSmallPreview);
+        this.puzzleWidget = puzzleWidget
         const size = `${puzzleWidgetSize}px`;
         assignStyle(puzzleWidget.style, {
             width: size,
             height: size
         })
 
+
+
+        document.body.appendChild(puzzleWidget);
         if (this.config.puzzlesCollected > 0) {
             puzzleWidget.style.backgroundImage = ` url(${frameSvg})`;
             this.addCloseIconToElement(puzzleWidget)
             this.isCloseIconAddedToWidget = true;
+            this.addSmallWidgetPreview()
         }
-
-        document.body.appendChild(puzzleWidget);
-        this.puzzleWidget = puzzleWidget
         new DragElement(this.puzzleWidget)
         isPuzzleWidgetDisplayed = true;
     }
@@ -354,6 +400,13 @@ class Puzzle extends LocalStorageConfig {
         [draggable=true] {
             cursor: move;
         }
+        #widgetPreview {
+            position: absolute;
+            width: 50px;
+            height: 50px;
+            bottom: -55px;
+            cursor: pointer;
+        }
         #puzzle-widget {
             border-radius: 10px;
             background-size: contain;
@@ -361,6 +414,9 @@ class Puzzle extends LocalStorageConfig {
             z-index: 1000;
             left: 20px;
             top: 20px;
+        }
+        .boomie-preview-mobile {
+            width: 100px;
         }
         .boomio--puzzle-widget-text {
             width: 100%;
@@ -941,6 +997,7 @@ class Puzzle extends LocalStorageConfig {
 
     addPuzzleToWidget = () => {
         this.puzzleWidget.style.backgroundImage = ` url(${frameSvg})`;
+        this.addSmallWidgetPreview()
         if (this.config.puzzlesCollected >= 4) {
             this.addWidgetText()
             this.puzzleWidget.onclick = this.showQR;
