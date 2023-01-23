@@ -212,7 +212,7 @@ class Puzzle extends LocalStorageConfig {
         if (isMobileDevice) {
             widgetPreview.innerHTML = `
                 <div class="coupon_preview_card_footer">
-                    <div class="btn-content d-flex align-items-center justify-content-center" style="height: 35px; width: 130px">
+                    <div class="btn-content d-flex align-items-center justify-content-center" style="height: 40px; width: 130px">
                         <img src="${dotImage}" alt="img not find">
                         <div class="d-flex flex-column btn-text-group ml-2"><small class="small-font">Open</small>
                         <b>Boomio app</b>
